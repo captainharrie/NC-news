@@ -3,7 +3,10 @@ const db = require("./db/connection");
 
 const express = require("express");
 const { getTopics } = require("./src/__controllers__/topics");
-const { getArticleById } = require("./src/__controllers__/articles");
+const {
+  getArticleById,
+  getArticles,
+} = require("./src/__controllers__/articles");
 const app = express();
 
 app.get("/api", (request, response, next) => {
@@ -12,6 +15,7 @@ app.get("/api", (request, response, next) => {
 
 app.get("/api/topics", getTopics);
 app.get("/api/articles/:article_id", getArticleById);
+app.get("/api/articles", getArticles);
 
 //errors
 

@@ -1,4 +1,4 @@
-const { selectArticleById } = require("../__models__/articles");
+const { selectArticleById, selectArticles } = require("../__models__/articles");
 
 exports.getArticleById = (request, response, next) => {
   const { article_id } = request.params;
@@ -6,7 +6,13 @@ exports.getArticleById = (request, response, next) => {
     .then((article) => {
       response.status(200).send({ article });
     })
-    .catch((error) => {
-      next(error);
-    });
+    .catch((error) => next(error));
+};
+
+exports.getArticles = (request, response, next) => {
+  selectArticles()
+    .then((articles) => {
+      response.status(200).send({ articles });
+    })
+    .catch((error) => next(error));
 };

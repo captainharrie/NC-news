@@ -56,14 +56,14 @@ describe("GET /api/articles/:article_id", () => {
       .expect(200)
       .then(({ body: { article } }) => {
         expect(Object.keys(article).length).toBe(8);
-        expect(typeof article.author).toBe("string");
-        expect(typeof article.title).toBe("string");
-        expect(typeof article.article_id).toBe("number");
-        expect(typeof article.body).toBe("string");
-        expect(typeof article.topic).toBe("string");
-        expect(typeof article.created_at).toBe("string");
-        expect(typeof article.votes).toBe("number");
-        expect(typeof article.article_img_url).toBe("string");
+        expect(article.author).toBeString(true);
+        expect(article.title).toBeString(true);
+        expect(article.article_id).toBeNumber(true);
+        expect(article.body).toBeString(true);
+        expect(article.topic).toBeString(true);
+        expect(article.created_at).toBeDateString(true);
+        expect(article.votes).toBeNumber(true);
+        expect(article.article_img_url).toBeString(true);
       });
   });
   test("404: Responds with not found when ID is out of range", () => {
@@ -81,5 +81,86 @@ describe("GET /api/articles/:article_id", () => {
       .then(({ body: { error } }) => {
         expect(error).toBe("Bad Request");
       });
+  });
+});
+
+describe("GET /api/articles", () => {
+  describe("200: should respond with an array of article objects.", () => {
+    test("Should return all of the articles.", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles.length).toBe(13);
+        });
+    });
+    test("Each article object should contain the following properties: author, title, article_id, topic, created_at, votes, article_img_url", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          articles.forEach((article) => {
+            expect(article.hasOwnProperty("author")).toBe(true);
+            expect(article.hasOwnProperty("title")).toBe(true);
+            expect(article.hasOwnProperty("article_id")).toBe(true);
+            expect(article.hasOwnProperty("topic")).toBe(true);
+            expect(article.hasOwnProperty("created_at")).toBe(true);
+            expect(article.hasOwnProperty("votes")).toBe(true);
+            expect(article.hasOwnProperty("article_img_url")).toBe(true);
+          });
+        });
+    });
+    test("Each article object should have had a comment_count added, which should be an integer", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          articles.forEach((article) => {
+            expect(article.hasOwnProperty("comment_count")).toBe(true);
+            expect(article.comment_count).toBeNumber(true);
+          });
+        });
+    });
+    test("The comment_count value should be the expected count for each article.", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          const articlesWithComments = [
+            { id: 1, count: 11 },
+            { id: 3, count: 2 },
+            { id: 5, count: 2 },
+            { id: 6, count: 1 },
+            { id: 9, count: 2 },
+          ];
+
+          articles.forEach((article) => {
+            let expectedCount = 0;
+            const comments = articlesWithComments.find(
+              (comments) => comments.id === article.article_id
+            );
+            if (comments) expectedCount = comments.count;
+            expect(article.comment_count).toBe(expectedCount);
+          });
+        });
+    });
+    test("The articles should by default be sorted by date, in descending order", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          expect(articles).toBeSortedBy("created_at", { descending: true });
+        });
+    });
+    test("There should not be a body property present on any of the article objects", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body: { articles } }) => {
+          articles.forEach((article) => {
+            expect(article.hasOwnProperty("body")).toBe(false);
+          });
+        });
+    });
   });
 });
