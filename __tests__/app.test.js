@@ -24,6 +24,7 @@ describe("GET /api", () => {
       });
   });
 });
+
 describe("GET to an invalid endpoint", () => {
   test("404: Invalid endpoint should respond with not found", () => {
     return request(app)
@@ -34,16 +35,20 @@ describe("GET to an invalid endpoint", () => {
       });
   });
 });
+
 describe("GET /api/topics", () => {
-  test("200: Responds with an object containing and array of topic objects, containing a slug and a description property", () => {
+  test("200: Responds with an object containing an array of topic objects, containing a slug and a description property", () => {
     return request(app)
       .get("/api/topics")
       .expect(200)
       .then(({ body: { topics } }) => {
         expect(topics.length).toBe(3);
         topics.forEach((topic) => {
-          expect(topic.hasOwnProperty("slug")).toBe(true);
-          expect(topic.hasOwnProperty("description")).toBe(true);
+          // prettier-ignore
+          expect(topic).toMatchObject({
+            slug:         expect.toBeString(true),
+            description:  expect.toBeString(true),
+          });
         });
       });
   });
@@ -56,14 +61,17 @@ describe("GET /api/articles/:article_id", () => {
       .expect(200)
       .then(({ body: { article } }) => {
         expect(Object.keys(article).length).toBe(8);
-        expect(article.author).toBeString(true);
-        expect(article.title).toBeString(true);
-        expect(article.article_id).toBeNumber(true);
-        expect(article.body).toBeString(true);
-        expect(article.topic).toBeString(true);
-        expect(article.created_at).toBeDateString(true);
-        expect(article.votes).toBeNumber(true);
-        expect(article.article_img_url).toBeString(true);
+        // prettier-ignore
+        expect(article).toMatchObject({
+          author:           "butter_bridge",
+          title:            "Living in the shadow of a great man",
+          article_id:       1,
+          body:             "I find this existence challenging",
+          topic:            "mitch",
+          created_at:       expect.toBeDateString(true),
+          votes:            100,
+          article_img_url:  "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+        })
       });
   });
   test("404: Responds with not found when ID is out of range", () => {
@@ -94,30 +102,24 @@ describe("GET /api/articles", () => {
           expect(articles.length).toBe(13);
         });
     });
-    test("Each article object should contain the following properties: author, title, article_id, topic, created_at, votes, article_img_url", () => {
+    test("Each article object should contain the following properties: author, title, article_id, topic, created_at, votes, article_img_url, and comment_count", () => {
       return request(app)
         .get("/api/articles")
         .expect(200)
         .then(({ body: { articles } }) => {
           articles.forEach((article) => {
-            expect(article.hasOwnProperty("author")).toBe(true);
-            expect(article.hasOwnProperty("title")).toBe(true);
-            expect(article.hasOwnProperty("article_id")).toBe(true);
-            expect(article.hasOwnProperty("topic")).toBe(true);
-            expect(article.hasOwnProperty("created_at")).toBe(true);
-            expect(article.hasOwnProperty("votes")).toBe(true);
-            expect(article.hasOwnProperty("article_img_url")).toBe(true);
-          });
-        });
-    });
-    test("Each article object should have had a comment_count added, which should be an integer", () => {
-      return request(app)
-        .get("/api/articles")
-        .expect(200)
-        .then(({ body: { articles } }) => {
-          articles.forEach((article) => {
-            expect(article.hasOwnProperty("comment_count")).toBe(true);
-            expect(article.comment_count).toBeNumber(true);
+            expect(Object.keys(article).length).toBe(8);
+            // prettier-ignore
+            expect(article).toMatchObject({
+              author:           expect.toBeString(true),
+              title:            expect.toBeString(true),
+              article_id:       expect.toBeNumber(true),
+              topic:            expect.toBeString(true),
+              created_at:       expect.toBeDateString(true),
+              votes:            expect.toBeNumber(true),
+              article_img_url:  expect.toBeString(true),
+              comment_count:    expect.toBeNumber(true),
+            })
           });
         });
     });
