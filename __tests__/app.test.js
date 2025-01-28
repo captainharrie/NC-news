@@ -166,3 +166,69 @@ describe("GET /api/articles", () => {
     });
   });
 });
+describe("GET /api/articles/:article_id/comments", () => {
+  describe("200: If the article has comments, responds with an object containing an array of comment objects, else informs the client there were no comments on the article", () => {
+    test("should return all of the relevant comments", () => {
+      return request(app)
+        .get("/api/articles/1/comments")
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          expect(comments.length).toBe(11);
+        });
+    });
+    test("Each comment object should contain the following properties: comment_id, votes, created_at, author, body, article_id", () => {
+      return request(app)
+        .get("/api/articles/1/comments")
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          comments.forEach((comment) => {
+            expect(Object.keys(comment).length).toBe(6);
+            // prettier-ignore
+            expect(comment).toMatchObject({
+              comment_id:   expect.toBeNumber(true),
+              votes:        expect.toBeNumber(true),
+              created_at:   expect.toBeDateString(true),
+              author:       expect.toBeString(true),
+              body:         expect.toBeString(true),
+              article_id:   expect.toBeNumber(true)
+            });
+          });
+        });
+    });
+    test("The comments should be returned sorted in descending order by created_at time (most recent first)", () => {
+      return request(app)
+        .get("/api/articles/3/comments")
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          expect(comments).toBeSortedBy("created_at", { descending: true });
+        });
+    });
+    test("If the article exists but there are no comments, should still return 200 but with an appropriate message.", () => {
+      return request(app)
+        .get("/api/articles/2/comments")
+        .expect(200)
+        .then(({ body: { comments } }) => {
+          expect(comments).toBe("There are no comments on this article.");
+        });
+    });
+  });
+  describe("Errors", () => {
+    test("404: Responds with a Not Found error when article ID is out of range", () => {
+      return request(app)
+        .get("/api/articles/999/comments")
+        .expect(404)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Not Found");
+        });
+    });
+
+    test("400: Responds with Bad Request error if the article ID is not a number", () => {
+      return request(app)
+        .get("/api/articles/myfavouritearticle/comments")
+        .expect(400)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Bad Request");
+        });
+    });
+  });
+});
