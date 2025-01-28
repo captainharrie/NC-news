@@ -127,19 +127,19 @@ describe("GET /api/articles", () => {
         .expect(200)
         .then(({ body: { articles } }) => {
           const articlesWithComments = [
-            { id: 1, count: 11 },
-            { id: 3, count: 2 },
-            { id: 5, count: 2 },
-            { id: 6, count: 1 },
-            { id: 9, count: 2 },
+            { article_id: 1, comment_count: 11 },
+            { article_id: 3, comment_count: 2 },
+            { article_id: 5, comment_count: 2 },
+            { article_id: 6, comment_count: 1 },
+            { article_id: 9, comment_count: 2 },
           ];
 
           articles.forEach((article) => {
             let expectedCount = 0;
             const comments = articlesWithComments.find(
-              (comments) => comments.id === article.article_id
+              (comments) => comments.article_id === article.article_id
             );
-            if (comments) expectedCount = comments.count;
+            if (comments) expectedCount = comments.comment_count;
             expect(article.comment_count).toBe(expectedCount);
           });
         });
