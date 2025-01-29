@@ -8,7 +8,11 @@ const {
   getArticles,
   patchArticle,
 } = require("./src/__controllers__/articles");
-const { getComments, postComment } = require("./src/__controllers__/comments");
+const {
+  getComments,
+  postComment,
+  deleteComment,
+} = require("./src/__controllers__/comments");
 const app = express();
 
 app.use(express.json());
@@ -33,6 +37,10 @@ app.post("/api/articles/:article_id/comments", postComment);
 app.patch("/api/articles/:article_id", patchArticle);
 // PATCH endpoints end
 
+// DELETE endpoints start
+app.delete("/api/comments/:comment_id", deleteComment);
+// DELETE endpoints end
+
 // Default responses
 app.get("*", (request, response, next) => {
   response.status(404).send({ error: "Not Found" });
@@ -43,6 +51,10 @@ app.post("*", (request, response, next) => {
 });
 
 app.patch("*", (request, response, next) => {
+  response.status(405).send({ error: "Method Not Allowed" });
+});
+
+app.delete("*", (request, response, next) => {
   response.status(405).send({ error: "Method Not Allowed" });
 });
 

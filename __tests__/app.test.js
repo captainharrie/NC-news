@@ -333,7 +333,7 @@ describe("POST: /api/articles/:article_id/comments", () => {
 
 // PATCH endpoint tests begin
 describe("PATCH: /[Nonexistent Endpoint]", () => {
-  describe("405: Unauthorised", () => {
+  describe("405: Method Not Allowed", () => {
     test("Invalid endpoint should respond with not allowed", () => {
       return request(app)
         .patch("/api/doesntexist")
@@ -455,3 +455,45 @@ describe("PATCH /api/articles/:article_id", () => {
   });
 });
 // PATCH endpoint tests end
+
+// DELETE endpoint tests start
+describe("DELETE: /[Nonexistent Endpoint]", () => {
+  describe("405: Method Not Allowed", () => {
+    test("Invalid endpoint should respond with not allowed", () => {
+      return request(app)
+        .delete("/api/doesntexist")
+        .expect(405)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Method Not Allowed");
+        });
+    });
+  });
+});
+
+describe("DELETE: /api/comments/:comment_id", () => {
+  describe("204: No Content", () => {
+    test("should delete an existing comment from the comments table with the matching comment ID", async () => {
+      await request(app).delete("/api/comments/1").expect(204);
+    });
+  });
+  describe("404: Not Found", () => {
+    test("should return not found if the provided comment id is a number but no comment with that id exists", () => {
+      return request(app)
+        .delete("/api/comments/999")
+        .expect(404)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Not Found");
+        });
+    });
+  });
+  describe("400: Bad Request", () => {
+    test("should respond with bad request if the provided comment ID is not a number", () => {
+      return request(app)
+        .delete("/api/comments/badcomment")
+        .expect(400)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Bad Request");
+        });
+    });
+  });
+});
