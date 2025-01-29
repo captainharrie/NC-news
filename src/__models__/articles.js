@@ -20,3 +20,14 @@ exports.selectArticles = () => {
       return rows;
     });
 };
+
+exports.updateArticle = (article_id, body) => {
+  let sql = "";
+  const args = [];
+  console.log(body);
+  if (body.inc_votes) {
+    sql += `UPDATE articles SET votes = votes + ${body.inc_votes} WHERE article_id = $1 RETURNING *`;
+    args.push(article_id);
+  }
+  return db.query(sql, args).then(({ rows }) => rows[0]);
+};

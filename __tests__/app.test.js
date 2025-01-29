@@ -27,6 +27,7 @@ describe("GET: /[Nonexistent Endpoint]", () => {
     });
   });
 });
+
 describe("GET: /api", () => {
   describe("200: Success", () => {
     test("Responds with an object detailing the documentation for each endpoint", () => {
@@ -248,6 +249,18 @@ describe("GET: /api/articles/:article_id/comments", () => {
 // GET endpoint tests end
 
 // POST endpoint tests begin
+describe("POST: /[Nonexistent Endpoint]", () => {
+  describe("401: Unauthorised", () => {
+    test("Invalid endpoint should respond with unauthorised", () => {
+      return request(app)
+        .post("/api/doesntexist")
+        .expect(401)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Unauthorised");
+        });
+    });
+  });
+});
 describe("POST: /api/articles/:article_id/comments", () => {
   describe("200: Success", () => {
     test("should take an object with a body and an author and return the posted comment, which has all the relevant keys added to it", () => {
@@ -317,3 +330,128 @@ describe("POST: /api/articles/:article_id/comments", () => {
   });
 });
 // POST endpoint tests end
+
+// PATCH endpoint tests begin
+describe("PATCH: /[Nonexistent Endpoint]", () => {
+  describe("401: Unauthorised", () => {
+    test("Invalid endpoint should respond with unauthorised", () => {
+      return request(app)
+        .patch("/api/doesntexist")
+        .expect(401)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Unauthorised");
+        });
+    });
+  });
+});
+describe("PATCH /api/articles/:article_id", () => {
+  describe("200: Success", () => {
+    test("Given a body with the key inc_votes with a POSITIVE value, it should INCREMENT the article's vote count and return the article with the expected vote count", () => {
+      return request(app)
+        .patch("/api/articles/1/")
+        .send({ inc_votes: 11 })
+        .expect(200)
+        .then(({ body: { article } }) => {
+          expect(Object.keys(article).length).toBe(8);
+          // prettier-ignore
+          expect(article).toMatchObject({
+            author:           "butter_bridge",
+            title:            "Living in the shadow of a great man",
+            article_id:       1,
+            body:             "I find this existence challenging",
+            topic:            "mitch",
+            created_at:       expect.toBeDateString(true),
+            votes:            111,
+            article_img_url:  "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+          })
+          return article;
+        });
+    });
+    test("Given a body with the key inc_votes with a NEGATIVE value, it should DECREMENT the article's vote count and return the article with the expected vote count", () => {
+      return request(app)
+        .patch("/api/articles/1/")
+        .send({ inc_votes: -1 })
+        .expect(200)
+        .then(({ body: { article } }) => {
+          expect(Object.keys(article).length).toBe(8);
+          // prettier-ignore
+          expect(article).toMatchObject({
+            author:           "butter_bridge",
+            title:            "Living in the shadow of a great man",
+            article_id:       1,
+            body:             "I find this existence challenging",
+            topic:            "mitch",
+            created_at:       expect.toBeDateString(true),
+            votes:            99,
+            article_img_url:  "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+          })
+          return article;
+        });
+    });
+    test("GETTING the article after PATCHING should return the article with the newly updated information", async () => {
+      const articleBeforePatch = await request(app)
+        .get("/api/articles/1/")
+        .expect(200)
+        .then(({ body: { article } }) => {
+          return article;
+        });
+
+      const patchedArticle = await request(app)
+        .patch("/api/articles/1/")
+        .send({ inc_votes: 1 })
+        .expect(200)
+        .then(({ body: { article } }) => {
+          return article;
+        });
+
+      const articleAfterPatch = await request(app)
+        .get("/api/articles/1/")
+        .expect(200)
+        .then(({ body: { article } }) => {
+          return article;
+        });
+
+      expect(articleBeforePatch).not.toEqual(articleAfterPatch);
+      expect(articleAfterPatch).toEqual(patchedArticle);
+    });
+  });
+  describe("400: Bad Request", () => {
+    test("If given a body with invalid keys, it should respond with Bad Request", async () => {
+      await request(app)
+        .patch("/api/articles/1/")
+        .send({ increment_votes: 1 })
+        .expect(400)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Bad Request");
+        });
+      await request(app)
+        .patch("/api/articles/1/")
+        .send({ inc_votes: 1, NewTitle: "New title" })
+        .expect(400)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Bad Request");
+        });
+    });
+    test("If given an article with an ID that is not a number, it should respond with Bad Request", () => {
+      return request(app)
+        .patch("/api/articles/myfavouritearticle/")
+        .send({ inc_votes: 1 })
+        .expect(400)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Bad Request");
+        });
+    });
+  });
+  describe("404: Not Found", () => {
+    test("If given a valid ID for an article that does not exist, it should respond with Not Found", () => {
+      return request(app)
+        .patch("/api/articles/999/")
+        .send({ inc_votes: 1 })
+        .expect(404)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Not Found");
+        });
+    });
+  });
+});
+// PATCH endpoint tests end

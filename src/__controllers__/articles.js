@@ -1,4 +1,9 @@
-const { selectArticleById, selectArticles } = require("../__models__/articles");
+const {
+  selectArticleById,
+  selectArticles,
+  updateArticle,
+} = require("../__models__/articles");
+const { validateKeys } = require("../__utils__/validateKeys");
 
 exports.getArticleById = (request, response, next) => {
   const { article_id } = request.params;
@@ -14,5 +19,19 @@ exports.getArticles = (request, response, next) => {
     .then((articles) => {
       response.status(200).send({ articles });
     })
+    .catch((error) => next(error));
+};
+
+exports.patchArticle = (request, response, next) => {
+  const { article_id } = request.params;
+  const body = request.body;
+  const receivedKeys = Object.keys(request.body);
+  const allowedKeys = ["inc_votes"];
+  return selectArticleById(article_id)
+    .then(() => validateKeys(receivedKeys, allowedKeys, false))
+    .then(() => updateArticle(article_id, body))
+    .then((updatedArticle) =>
+      response.status(200).send({ article: updatedArticle })
+    )
     .catch((error) => next(error));
 };
