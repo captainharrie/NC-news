@@ -39,11 +39,11 @@ app.get("*", (request, response, next) => {
 });
 
 app.post("*", (request, response, next) => {
-  response.status(401).send({ error: "Unauthorised" });
+  response.status(405).send({ error: "Method Not Allowed" });
 });
 
 app.patch("*", (request, response, next) => {
-  response.status(401).send({ error: "Unauthorised" });
+  response.status(405).send({ error: "Method Not Allowed" });
 });
 
 // Error Handling
