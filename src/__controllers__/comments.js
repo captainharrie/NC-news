@@ -1,10 +1,10 @@
+const { selectArticleById } = require("../__models__/articles");
 const { selectComments, insertComment } = require("../__models__/comments");
-const { checkArticleExists } = require("../__utils__/checkArticleExists");
 const { validateKeys } = require("../__utils__/validateKeys");
 
 exports.getComments = (request, response, next) => {
   const { article_id } = request.params;
-  checkArticleExists(article_id)
+  selectArticleById(article_id)
     .then(() => {
       return selectComments(article_id);
     })
