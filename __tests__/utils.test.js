@@ -104,35 +104,60 @@ describe("formatComments", () => {
   });
 });
 
-describe("validateKeys", () => {
-  test("should return a resolved promise if the provided keys match the expected keys", async () => {
-    await expect(
-      validateKeys(["key 1", "key 2", "key 3"], ["key 1", "key 2", "key 3"])
-    ).resolves.toEqual("Keys are valid");
-  });
-  test("should return a rejected promise if provided too many keys", async () => {
-    await expect(
-      validateKeys(["key 1", "key 2", "key 3"], ["key 1", "key 2"])
-    ).rejects.toEqual({
-      status: 400,
-      msg: "Bad Request",
+describe("validateKeys(recievedKeys, expectedKeys, matchAll)", () => {
+  describe("matchAll === true :: if the third argument is not provided, matchAll defaults to true", () => {
+    test("should return a resolved promise if the provided keys match the expected keys", async () => {
+      await expect(
+        validateKeys(["key 1", "key 2", "key 3"], ["key 1", "key 2", "key 3"])
+      ).resolves.toEqual("Keys are valid");
+    });
+    test("should return a rejected promise if provided too many keys", async () => {
+      await expect(
+        validateKeys(["key 1", "key 2", "key 3"], ["key 1", "key 2"])
+      ).rejects.toEqual({
+        status: 400,
+        msg: "Bad Request",
+      });
+    });
+    test("should return a rejected promise if provided too few keys", async () => {
+      await expect(
+        validateKeys(["key 1", "key 2"], ["key 1", "key 2", "key 3"])
+      ).rejects.toEqual({
+        status: 400,
+        msg: "Bad Request",
+      });
+    });
+    test("should return a rejected promise if provided keys do not match", async () => {
+      await expect(
+        validateKeys(["key 1", "key 2", "key 4"], ["key 1", "key 2", "key 3"])
+      ).rejects.toEqual({
+        status: 400,
+        msg: "Bad Request",
+      });
     });
   });
-  test("should return a rejected promise if provided too few keys", async () => {
-    await expect(
-      validateKeys(["key 1", "key 2"], ["key 1", "key 2", "key 3"])
-    ).rejects.toEqual({
-      status: 400,
-      msg: "Bad Request",
+  describe("matchAll === false", () => {
+    test("should return a resolved promise if all the provided keys are in the expected keys array", async () => {
+      await expect(
+        validateKeys(["key 1", "key 2"], ["key 1", "key 2", "key 3"], false)
+      ).resolves.toEqual("Keys are valid");
     });
-  });
+    test("should return a rejected promise if any of the provided keys are not the expected keys array", async () => {
+      await expect(
+        validateKeys(["key 1", "key 4"], ["key 1", "key 2", "key 3"], false)
+      ).rejects.toEqual({
+        status: 400,
+        msg: "Bad Request",
+      });
+    });
 
-  test("should return a rejected promise if provided keys do not match", async () => {
-    await expect(
-      validateKeys(["key 1", "key 2", "key 4"], ["key 1", "key 2", "key 3"])
-    ).rejects.toEqual({
-      status: 400,
-      msg: "Bad Request",
+    test("should return a rejected promise if no keys are provided", async () => {
+      await expect(
+        validateKeys([], ["key 1", "key 2", "key 3"], false)
+      ).rejects.toEqual({
+        status: 400,
+        msg: "Bad Request",
+      });
     });
   });
 });
