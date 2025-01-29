@@ -6,29 +6,47 @@ const { getTopics } = require("./src/__controllers__/topics");
 const {
   getArticleById,
   getArticles,
+  patchArticle,
 } = require("./src/__controllers__/articles");
 const { getComments, postComment } = require("./src/__controllers__/comments");
 const app = express();
 
 app.use(express.json());
 
+// GET endpoints start
 app.get("/api", (request, response, next) => {
   response.status(200).send({ endpoints: endpointsJson });
 });
 
 app.get("/api/topics", getTopics);
+
 app.get("/api/articles/:article_id/comments", getComments);
 app.get("/api/articles/:article_id", getArticleById);
 app.get("/api/articles", getArticles);
+// GET endpoints end
 
+// POST endpoints start
 app.post("/api/articles/:article_id/comments", postComment);
+// POST endpoints end
 
-//errors
+// PATCH endpoints start
+app.patch("/api/articles/:article_id", patchArticle);
+// PATCH endpoints end
 
+// Default responses
 app.get("*", (request, response, next) => {
   response.status(404).send({ error: "Not Found" });
 });
 
+app.post("*", (request, response, next) => {
+  response.status(401).send({ error: "Unauthorised" });
+});
+
+app.patch("*", (request, response, next) => {
+  response.status(401).send({ error: "Unauthorised" });
+});
+
+// Error Handling
 app.use((error, request, response, next) => {
   if (error.status && error.msg) {
     response.status(error.status).send({ error: error.msg });
