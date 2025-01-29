@@ -3,7 +3,11 @@ const {
   createRef,
   formatComments,
 } = require("../db/seeds/utils");
+const data = require("../db/data/test-data/");
+const db = require("../db/connection");
+const seed = require("../db/seeds/seed");
 const { validateKeys } = require("../src/__utils__/validateKeys");
+const { validateId } = require("../src/__utils__/validateId");
 
 describe("convertTimestampToDate", () => {
   test("returns a new object", () => {
@@ -158,6 +162,28 @@ describe("validateKeys(recievedKeys, expectedKeys, matchAll)", () => {
         status: 400,
         msg: "Bad Request",
       });
+    });
+  });
+});
+
+describe("validateId", () => {
+  beforeAll(() => {
+    return seed(data);
+  });
+  afterAll(() => {
+    return db.end();
+  });
+  test("should return a resolved promise if the item with the provided ID exists in the table", async () => {
+    await expect(
+      validateId({ table: "comments", column: "comment_id", id: 1 })
+    ).resolves.toEqual("comment_id 1 exists in the table comments");
+  });
+  test("should return a rejected promise if no item matches the provided ID in the table", async () => {
+    await expect(
+      validateId({ table: "comments", column: "comment_id", id: 999 })
+    ).rejects.toEqual({
+      status: 404,
+      msg: "Not Found",
     });
   });
 });
