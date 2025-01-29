@@ -250,13 +250,13 @@ describe("GET: /api/articles/:article_id/comments", () => {
 
 // POST endpoint tests begin
 describe("POST: /[Nonexistent Endpoint]", () => {
-  describe("401: Unauthorised", () => {
-    test("Invalid endpoint should respond with unauthorised", () => {
+  describe("405: Method Not Allowed", () => {
+    test("Invalid endpoint should respond with not allowed", () => {
       return request(app)
         .post("/api/doesntexist")
-        .expect(401)
+        .expect(405)
         .then(({ body: { error } }) => {
-          expect(error).toBe("Unauthorised");
+          expect(error).toBe("Method Not Allowed");
         });
     });
   });
@@ -333,13 +333,13 @@ describe("POST: /api/articles/:article_id/comments", () => {
 
 // PATCH endpoint tests begin
 describe("PATCH: /[Nonexistent Endpoint]", () => {
-  describe("401: Unauthorised", () => {
-    test("Invalid endpoint should respond with unauthorised", () => {
+  describe("405: Unauthorised", () => {
+    test("Invalid endpoint should respond with not allowed", () => {
       return request(app)
         .patch("/api/doesntexist")
-        .expect(401)
+        .expect(405)
         .then(({ body: { error } }) => {
-          expect(error).toBe("Unauthorised");
+          expect(error).toBe("Method Not Allowed");
         });
     });
   });
