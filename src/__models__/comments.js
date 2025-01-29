@@ -16,3 +16,11 @@ exports.insertComment = (body, article_id, author) => {
     )
     .then(({ rows }) => rows[0]);
 };
+
+exports.dropComment = (comment_id) => {
+  return db
+    .query("DELETE FROM comments WHERE comment_id = $1 RETURNING *", [
+      comment_id,
+    ])
+    .then(({ rows }) => rows);
+};

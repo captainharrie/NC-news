@@ -1,5 +1,10 @@
 const { selectArticleById } = require("../__models__/articles");
-const { selectComments, insertComment } = require("../__models__/comments");
+const {
+  selectComments,
+  insertComment,
+  dropComment,
+} = require("../__models__/comments");
+const { validateId } = require("../__utils__/validateId");
 const { validateKeys } = require("../__utils__/validateKeys");
 
 exports.getComments = (request, response, next) => {
@@ -28,5 +33,13 @@ exports.postComment = (request, response, next) => {
       return insertComment(body, article_id, author);
     })
     .then((comment) => response.status(201).send({ comment }))
+    .catch((error) => next(error));
+};
+
+exports.deleteComment = (request, response, next) => {
+  const { comment_id } = request.params;
+  validateId({ table: "comments", column: "comment_id", id: comment_id })
+    .then(() => dropComment(comment_id))
+    .then(() => response.status(204).send())
     .catch((error) => next(error));
 };
