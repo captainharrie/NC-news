@@ -7,6 +7,6 @@ exports.checkArticleExists = (article_id) => {
     .then(({ rows }) => {
       if (rows.length === 0) {
         return Promise.reject({ status: 404, msg: "Not Found" });
-      } else return Promise.resolve();
+      } else return Promise.resolve({ status: 200, msg: "Article exists" });
     });
 };
