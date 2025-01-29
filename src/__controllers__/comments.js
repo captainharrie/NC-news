@@ -27,6 +27,6 @@ exports.postComment = (request, response, next) => {
       const { article_id } = request.params;
       return insertComment(body, article_id, author);
     })
-    .then((comment) => response.status(200).send({ comment }))
+    .then((comment) => response.status(201).send({ comment }))
     .catch((error) => next(error));
 };

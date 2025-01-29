@@ -262,12 +262,12 @@ describe("POST: /[Nonexistent Endpoint]", () => {
   });
 });
 describe("POST: /api/articles/:article_id/comments", () => {
-  describe("200: Success", () => {
+  describe("201: Created", () => {
     test("should take an object with a body and an author and return the posted comment, which has all the relevant keys added to it", () => {
       return request(app)
         .post("/api/articles/1/comments")
         .send({ body: "This is a comment", author: "butter_bridge" })
-        .expect(200)
+        .expect(201)
         .then(({ body: { comment } }) => {
           expect(Object.keys(comment).length).toBe(6);
           // prettier-ignore
