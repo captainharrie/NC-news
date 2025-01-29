@@ -121,5 +121,9 @@
         "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
       }
     }
+  },
+  "DELETE /api/comments/:comment_id": {
+    "description": "Deletes the comment with the specified comment_id, which is a numerical value corresponding to the desired comment.",
+    "exampleResponse": "No response"
   }
 }
