@@ -3,19 +3,11 @@ const {
   createRef,
   formatComments,
 } = require("../db/seeds/utils");
-const { checkArticleExists } = require("../src/__utils__/checkArticleExists");
-
 const data = require("../db/data/test-data/");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
-
-beforeEach(() => {
-  return seed(data);
-});
-
-afterAll(() => {
-  return db.end();
-});
+const { checkArticleExists } = require("../src/__utils__/checkArticleExists");
+const { validateKeys } = require("../src/__utils__/validateKeys");
 
 describe("convertTimestampToDate", () => {
   test("returns a new object", () => {
@@ -117,6 +109,12 @@ describe("formatComments", () => {
 });
 
 describe("checkArticleExists", () => {
+  beforeAll(() => {
+    return seed(data);
+  });
+  afterAll(() => {
+    return db.end();
+  });
   test("should return a resolved promise if the article with the provided ID exists", async () => {
     await expect(checkArticleExists(1)).resolves.toEqual({
       status: 200,
@@ -127,6 +125,39 @@ describe("checkArticleExists", () => {
     await expect(checkArticleExists(999)).rejects.toEqual({
       status: 404,
       msg: "Not Found",
+    });
+  });
+});
+
+describe("validateKeys", () => {
+  test("should return a resolved promise if the provided keys match the expected keys", async () => {
+    await expect(
+      validateKeys(["key 1", "key 2", "key 3"], ["key 1", "key 2", "key 3"])
+    ).resolves.toEqual("Keys are valid");
+  });
+  test("should return a rejected promise if provided too many keys", async () => {
+    await expect(
+      validateKeys(["key 1", "key 2", "key 3"], ["key 1", "key 2"])
+    ).rejects.toEqual({
+      status: 400,
+      msg: "Bad Request",
+    });
+  });
+  test("should return a rejected promise if provided too few keys", async () => {
+    await expect(
+      validateKeys(["key 1", "key 2"], ["key 1", "key 2", "key 3"])
+    ).rejects.toEqual({
+      status: 400,
+      msg: "Bad Request",
+    });
+  });
+
+  test("should return a rejected promise if provided keys do not match", async () => {
+    await expect(
+      validateKeys(["key 1", "key 2", "key 4"], ["key 1", "key 2", "key 3"])
+    ).rejects.toEqual({
+      status: 400,
+      msg: "Bad Request",
     });
   });
 });
