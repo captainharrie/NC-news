@@ -250,24 +250,24 @@ describe("GET: /api/articles/:article_id/comments", () => {
 
 // POST endpoint tests begin
 describe("POST: /[Nonexistent Endpoint]", () => {
-  describe("401: Unauthorised", () => {
-    test("Invalid endpoint should respond with unauthorised", () => {
+  describe("405: Method Not Allowed", () => {
+    test("Invalid endpoint should respond with not allowed", () => {
       return request(app)
         .post("/api/doesntexist")
-        .expect(401)
+        .expect(405)
         .then(({ body: { error } }) => {
-          expect(error).toBe("Unauthorised");
+          expect(error).toBe("Method Not Allowed");
         });
     });
   });
 });
 describe("POST: /api/articles/:article_id/comments", () => {
-  describe("200: Success", () => {
+  describe("201: Created", () => {
     test("should take an object with a body and an author and return the posted comment, which has all the relevant keys added to it", () => {
       return request(app)
         .post("/api/articles/1/comments")
         .send({ body: "This is a comment", author: "butter_bridge" })
-        .expect(200)
+        .expect(201)
         .then(({ body: { comment } }) => {
           expect(Object.keys(comment).length).toBe(6);
           // prettier-ignore
@@ -333,13 +333,13 @@ describe("POST: /api/articles/:article_id/comments", () => {
 
 // PATCH endpoint tests begin
 describe("PATCH: /[Nonexistent Endpoint]", () => {
-  describe("401: Unauthorised", () => {
-    test("Invalid endpoint should respond with unauthorised", () => {
+  describe("405: Method Not Allowed", () => {
+    test("Invalid endpoint should respond with not allowed", () => {
       return request(app)
         .patch("/api/doesntexist")
-        .expect(401)
+        .expect(405)
         .then(({ body: { error } }) => {
-          expect(error).toBe("Unauthorised");
+          expect(error).toBe("Method Not Allowed");
         });
     });
   });
@@ -455,3 +455,45 @@ describe("PATCH /api/articles/:article_id", () => {
   });
 });
 // PATCH endpoint tests end
+
+// DELETE endpoint tests start
+describe("DELETE: /[Nonexistent Endpoint]", () => {
+  describe("405: Method Not Allowed", () => {
+    test("Invalid endpoint should respond with not allowed", () => {
+      return request(app)
+        .delete("/api/doesntexist")
+        .expect(405)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Method Not Allowed");
+        });
+    });
+  });
+});
+
+describe("DELETE: /api/comments/:comment_id", () => {
+  describe("204: No Content", () => {
+    test("should delete an existing comment from the comments table with the matching comment ID", async () => {
+      await request(app).delete("/api/comments/1").expect(204);
+    });
+  });
+  describe("404: Not Found", () => {
+    test("should return not found if the provided comment id is a number but no comment with that id exists", () => {
+      return request(app)
+        .delete("/api/comments/999")
+        .expect(404)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Not Found");
+        });
+    });
+  });
+  describe("400: Bad Request", () => {
+    test("should respond with bad request if the provided comment ID is not a number", () => {
+      return request(app)
+        .delete("/api/comments/badcomment")
+        .expect(400)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Bad Request");
+        });
+    });
+  });
+});
