@@ -232,3 +232,66 @@ describe("GET /api/articles/:article_id/comments", () => {
     });
   });
 });
+
+describe("POST /api/articles/:article_id/comments", () => {
+  test("200: should take an object with a body and an author and return the posted comment, which has all the relevant keys added to it", () => {
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send({ body: "This is a comment", author: "butter_bridge" })
+      .expect(200)
+      .then(({ body: { comment } }) => {
+        expect(Object.keys(comment).length).toBe(6);
+        // prettier-ignore
+        expect(comment).toMatchObject({
+              comment_id:   expect.toBeNumber(true),
+              votes:        expect.toBeNumber(true),
+              created_at:   expect.toBeDateString(true),
+              author:       "butter_bridge",
+              body:         "This is a comment",
+              article_id:   1
+            });
+      });
+  });
+  describe("Errors", () => {
+    test("400: If provided body has missing/invalid keys, should return a Bad Request", () => {
+      return request(app)
+        .post("/api/articles/1/comments")
+        .send({
+          title: "This is a title",
+          author: "Harrie",
+        })
+        .expect(400)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Bad Request");
+        });
+    });
+
+    test("400: If provided article ID is not a number, should return Bad Request", () => {
+      return request(app)
+        .post("/api/articles/myfavouritearticle/comments")
+        .send({ body: "This is a comment", author: "butter_bridge" })
+        .expect(400)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Bad Request");
+        });
+    });
+    test("401: If user does not exist, should return Unauthorised", () => {
+      return request(app)
+        .post("/api/articles/1/comments")
+        .send({ body: "This is a comment", author: "Harrie" })
+        .expect(401)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Unauthorised");
+        });
+    });
+    test("404: If article does not exist, should return Not Found", () => {
+      return request(app)
+        .post("/api/articles/999/comments")
+        .send({ body: "This is a comment", author: "butter_bridge" })
+        .expect(404)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Not Found");
+        });
+    });
+  });
+});
