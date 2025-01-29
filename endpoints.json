@@ -75,5 +75,25 @@
         }
       ]
     }
+  },
+  "POST /api/articles/:article_id/comments": {
+    "description": "Takes a JSON object containing a body and an author and POSTs the comment to the matching article_id, which is a numerical value corresponding to the desired article",
+    "queries": [],
+    "exampleBody": {
+      "author": "icellusedkars",
+      "body": "Ambidextrous marsupial"
+    },
+    "exampleResponse": {
+      "comments": [
+        {
+          "comment_id": 11,
+          "body": "Ambidextrous marsupial",
+          "article_id": 3,
+          "author": "icellusedkars",
+          "votes": 0,
+          "created_at": "2020-09-19T23:10:00.000Z"
+        }
+      ]
+    }
   }
 }
