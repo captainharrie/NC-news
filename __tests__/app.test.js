@@ -14,87 +14,99 @@ afterAll(() => {
   return db.end();
 });
 
-describe("GET /api", () => {
-  test("200: Responds with an object detailing the documentation for each endpoint", () => {
-    return request(app)
-      .get("/api")
-      .expect(200)
-      .then(({ body: { endpoints } }) => {
-        expect(endpoints).toEqual(endpointsJson);
-      });
+// GET endpoint tests begin
+describe("GET: /[Nonexistent Endpoint]", () => {
+  describe("404: Not found", () => {
+    test("Invalid endpoint should respond with not found", () => {
+      return request(app)
+        .get("/api/doesntexist")
+        .expect(404)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Not Found");
+        });
+    });
+  });
+});
+describe("GET: /api", () => {
+  describe("200: Success", () => {
+    test("Responds with an object detailing the documentation for each endpoint", () => {
+      return request(app)
+        .get("/api")
+        .expect(200)
+        .then(({ body: { endpoints } }) => {
+          expect(endpoints).toEqual(endpointsJson);
+        });
+    });
   });
 });
 
-describe("GET to an invalid endpoint", () => {
-  test("404: Invalid endpoint should respond with not found", () => {
-    return request(app)
-      .get("/api/doesntexist")
-      .expect(404)
-      .then(({ body: { error } }) => {
-        expect(error).toBe("Not Found");
-      });
-  });
-});
-
-describe("GET /api/topics", () => {
-  test("200: Responds with an object containing an array of topic objects, containing a slug and a description property", () => {
-    return request(app)
-      .get("/api/topics")
-      .expect(200)
-      .then(({ body: { topics } }) => {
-        expect(topics.length).toBe(3);
-        topics.forEach((topic) => {
-          // prettier-ignore
-          expect(topic).toMatchObject({
-            slug:         expect.toBeString(true),
-            description:  expect.toBeString(true),
+describe("GET: /api/topics", () => {
+  describe("200: Success", () => {
+    test("Responds with an object containing an array of topic objects, containing a slug and a description property", () => {
+      return request(app)
+        .get("/api/topics")
+        .expect(200)
+        .then(({ body: { topics } }) => {
+          expect(topics.length).toBe(3);
+          topics.forEach((topic) => {
+            // prettier-ignore
+            expect(topic).toMatchObject({
+              slug:         expect.toBeString(true),
+              description:  expect.toBeString(true),
+            });
           });
         });
-      });
+    });
   });
 });
 
-describe("GET /api/articles/:article_id", () => {
-  test("200: Responds with the correct article object", () => {
-    return request(app)
-      .get("/api/articles/1")
-      .expect(200)
-      .then(({ body: { article } }) => {
-        expect(Object.keys(article).length).toBe(8);
-        // prettier-ignore
-        expect(article).toMatchObject({
-          author:           "butter_bridge",
-          title:            "Living in the shadow of a great man",
-          article_id:       1,
-          body:             "I find this existence challenging",
-          topic:            "mitch",
-          created_at:       expect.toBeDateString(true),
-          votes:            100,
-          article_img_url:  "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
-        })
-      });
+describe("GET: /api/articles/:article_id", () => {
+  describe("200: Success", () => {
+    test("Responds with the correct article object", () => {
+      return request(app)
+        .get("/api/articles/1")
+        .expect(200)
+        .then(({ body: { article } }) => {
+          expect(Object.keys(article).length).toBe(8);
+          // prettier-ignore
+          expect(article).toMatchObject({
+            author:           "butter_bridge",
+            title:            "Living in the shadow of a great man",
+            article_id:       1,
+            body:             "I find this existence challenging",
+            topic:            "mitch",
+            created_at:       expect.toBeDateString(true),
+            votes:            100,
+            article_img_url:  "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+          })
+        });
+    });
   });
-  test("404: Responds with not found when ID is out of range", () => {
-    return request(app)
-      .get("/api/articles/9001")
-      .expect(404)
-      .then(({ body: { error } }) => {
-        expect(error).toBe("Not Found");
-      });
+  describe("400: Bad Request", () => {
+    test("400: Responds with bad request when ID is not a number", () => {
+      return request(app)
+        .get("/api/articles/mitch")
+        .expect(400)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Bad Request");
+        });
+    });
   });
-  test("400: Responds with bad request when ID is not a number", () => {
-    return request(app)
-      .get("/api/articles/mitch")
-      .expect(400)
-      .then(({ body: { error } }) => {
-        expect(error).toBe("Bad Request");
-      });
+  describe("404: Not Found", () => {
+    test("Responds with not found when ID is out of range", () => {
+      return request(app)
+        .get("/api/articles/9001")
+        .expect(404)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Not Found");
+        });
+    });
   });
 });
 
-describe("GET /api/articles", () => {
-  describe("200: should respond with an array of article objects.", () => {
-    test("Should return all of the articles.", () => {
+describe("GET: /api/articles", () => {
+  describe("200: Success", () => {
+    test("Should respond with an array of article objects, containing all articles in the DB.", () => {
       return request(app)
         .get("/api/articles")
         .expect(200)
@@ -166,9 +178,9 @@ describe("GET /api/articles", () => {
     });
   });
 });
-describe("GET /api/articles/:article_id/comments", () => {
-  describe("200: If the article has comments, responds with an object containing an array of comment objects, else informs the client there were no comments on the article", () => {
-    test("should return all of the relevant comments", () => {
+describe("GET: /api/articles/:article_id/comments", () => {
+  describe("200: Success", () => {
+    test("should return an object with an array all of the relevant comments", () => {
       return request(app)
         .get("/api/articles/1/comments")
         .expect(200)
@@ -212,17 +224,8 @@ describe("GET /api/articles/:article_id/comments", () => {
         });
     });
   });
-  describe("Errors", () => {
-    test("404: Responds with a Not Found error when article ID is out of range", () => {
-      return request(app)
-        .get("/api/articles/999/comments")
-        .expect(404)
-        .then(({ body: { error } }) => {
-          expect(error).toBe("Not Found");
-        });
-    });
-
-    test("400: Responds with Bad Request error if the article ID is not a number", () => {
+  describe("400: Bad Request", () => {
+    test("Responds with Bad Request error if the article ID is not a number", () => {
       return request(app)
         .get("/api/articles/myfavouritearticle/comments")
         .expect(400)
@@ -231,29 +234,43 @@ describe("GET /api/articles/:article_id/comments", () => {
         });
     });
   });
-});
-
-describe("POST /api/articles/:article_id/comments", () => {
-  test("200: should take an object with a body and an author and return the posted comment, which has all the relevant keys added to it", () => {
-    return request(app)
-      .post("/api/articles/1/comments")
-      .send({ body: "This is a comment", author: "butter_bridge" })
-      .expect(200)
-      .then(({ body: { comment } }) => {
-        expect(Object.keys(comment).length).toBe(6);
-        // prettier-ignore
-        expect(comment).toMatchObject({
-              comment_id:   expect.toBeNumber(true),
-              votes:        expect.toBeNumber(true),
-              created_at:   expect.toBeDateString(true),
-              author:       "butter_bridge",
-              body:         "This is a comment",
-              article_id:   1
-            });
-      });
+  describe("404: Not Found", () => {
+    test("Responds with a Not Found error when article ID is out of range", () => {
+      return request(app)
+        .get("/api/articles/999/comments")
+        .expect(404)
+        .then(({ body: { error } }) => {
+          expect(error).toBe("Not Found");
+        });
+    });
   });
-  describe("Errors", () => {
-    test("400: If provided body has missing/invalid keys, should return a Bad Request", () => {
+});
+// GET endpoint tests end
+
+// POST endpoint tests begin
+describe("POST: /api/articles/:article_id/comments", () => {
+  describe("200: Success", () => {
+    test("should take an object with a body and an author and return the posted comment, which has all the relevant keys added to it", () => {
+      return request(app)
+        .post("/api/articles/1/comments")
+        .send({ body: "This is a comment", author: "butter_bridge" })
+        .expect(200)
+        .then(({ body: { comment } }) => {
+          expect(Object.keys(comment).length).toBe(6);
+          // prettier-ignore
+          expect(comment).toMatchObject({
+            comment_id:   expect.toBeNumber(true),
+            votes:        expect.toBeNumber(true),
+            created_at:   expect.toBeDateString(true),
+            author:       "butter_bridge",
+            body:         "This is a comment",
+            article_id:   1
+          });
+        });
+    });
+  });
+  describe("400: Bad Request", () => {
+    test("If provided body has missing/invalid keys, should return a Bad Request", () => {
       return request(app)
         .post("/api/articles/1/comments")
         .send({
@@ -266,7 +283,7 @@ describe("POST /api/articles/:article_id/comments", () => {
         });
     });
 
-    test("400: If provided article ID is not a number, should return Bad Request", () => {
+    test("If provided article ID is not a number, should return Bad Request", () => {
       return request(app)
         .post("/api/articles/myfavouritearticle/comments")
         .send({ body: "This is a comment", author: "butter_bridge" })
@@ -275,7 +292,9 @@ describe("POST /api/articles/:article_id/comments", () => {
           expect(error).toBe("Bad Request");
         });
     });
-    test("401: If user does not exist, should return Unauthorised", () => {
+  });
+  describe("401: Unauthorised", () => {
+    test("If user does not exist, should return Unauthorised", () => {
       return request(app)
         .post("/api/articles/1/comments")
         .send({ body: "This is a comment", author: "Harrie" })
@@ -284,7 +303,9 @@ describe("POST /api/articles/:article_id/comments", () => {
           expect(error).toBe("Unauthorised");
         });
     });
-    test("404: If article does not exist, should return Not Found", () => {
+  });
+  describe("404: Not Found", () => {
+    test("If article does not exist, should return Not Found", () => {
       return request(app)
         .post("/api/articles/999/comments")
         .send({ body: "This is a comment", author: "butter_bridge" })
@@ -295,3 +316,4 @@ describe("POST /api/articles/:article_id/comments", () => {
     });
   });
 });
+// POST endpoint tests end
