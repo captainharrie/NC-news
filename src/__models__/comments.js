@@ -7,3 +7,12 @@ exports.selectComments = (article_id) => {
     )
     .then(({ rows }) => rows);
 };
+
+exports.insertComment = (body, article_id, author) => {
+  return db
+    .query(
+      "INSERT INTO comments (body, article_id, author) VALUES ($1, $2, $3) RETURNING *",
+      [body, article_id, author]
+    )
+    .then(({ rows }) => rows[0]);
+};
