@@ -63,13 +63,13 @@ app.delete("*", (request, response, next) => {
 // Error Handling
 app.use((error, request, response, next) => {
   if (error.status && error.msg) {
-    response.status(error.status).send({ error: error.msg });
+    response.status(error.status).send({ error: error.error, msg: error.msg });
   } else next(error);
 });
 
 app.use((error, request, response, next) => {
   if (error.code === "22P02") {
-    response.status(400).send({ error: "Bad Request" });
+    response.status(400).send({ error: "Bad Request", msg: "Invalid ID" });
   } else next(error);
 });
 
@@ -78,7 +78,9 @@ app.use((error, request, response, next) => {
     error.code === "23503" &&
     error.constraint === "comments_article_id_fkey"
   ) {
-    response.status(404).send({ error: "Not Found" });
+    response
+      .status(404)
+      .send({ error: "Not Found", msg: "Article does not exist" });
   } else next(error);
 });
 

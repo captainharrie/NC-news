@@ -24,7 +24,11 @@ exports.dropComment = (comment_id) => {
     ])
     .then(({ rows }) => {
       if (rows.length === 0) {
-        return Promise.reject({ status: 404, msg: "Not Found" });
+        return Promise.reject({
+          status: 404,
+          error: "Not Found",
+          msg: "Can't delete a comment that does not exist",
+        });
       }
     });
 };
