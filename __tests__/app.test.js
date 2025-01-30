@@ -246,6 +246,28 @@ describe("GET: /api/articles/:article_id/comments", () => {
     });
   });
 });
+
+describe("GET: /api/users", () => {
+  describe("200: Success", () => {
+    test("Responds with an object containing an array of user objects, containing a username, a name, and an avatar_url property", () => {
+      return request(app)
+        .get("/api/users")
+        .expect(200)
+        .then(({ body: { users } }) => {
+          expect(users.length).toBe(4);
+          users.forEach((user) => {
+            expect(Object.keys(user).length).toBe(3);
+            // prettier-ignore
+            expect(user).toMatchObject({
+              username:     expect.toBeString(true),
+              name:         expect.toBeString(true),
+              avatar_url:   expect.toBeString(true),
+            });
+          });
+        });
+    });
+  });
+});
 // GET endpoint tests end
 
 // POST endpoint tests begin
