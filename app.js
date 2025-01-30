@@ -13,6 +13,7 @@ const {
   postComment,
   deleteComment,
 } = require("./src/__controllers__/comments");
+const { getUsers } = require("./src/__controllers__/users");
 const app = express();
 
 app.use(express.json());
@@ -27,6 +28,7 @@ app.get("/api/topics", getTopics);
 app.get("/api/articles/:article_id/comments", getComments);
 app.get("/api/articles/:article_id", getArticleById);
 app.get("/api/articles", getArticles);
+app.get("/api/users", getUsers);
 // GET endpoints end
 
 // POST endpoints start
