@@ -3,6 +3,7 @@ const {
   selectArticles,
   updateArticle,
 } = require("../__models__/articles");
+const { checkTopicExists } = require("../__utils__/checkTopicExists");
 const { validateKeys } = require("../__utils__/validateKeys");
 
 exports.getArticleById = (request, response, next) => {
@@ -14,13 +15,18 @@ exports.getArticleById = (request, response, next) => {
     .catch((error) => next(error));
 };
 
-exports.getArticles = (request, response, next) => {
-  const queries = request.query;
-  selectArticles(queries.sort_by, queries.order)
-    .then((articles) => {
+exports.getArticles = async (request, response, next) => {
+  try {
+    const { sort_by, order, topic } = request.query;
+    if (topic) {
+      await checkTopicExists(topic);
+    }
+    await selectArticles(sort_by, order, topic).then((articles) => {
       response.status(200).send({ articles });
-    })
-    .catch((error) => next(error));
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 exports.patchArticle = (request, response, next) => {

@@ -4,12 +4,16 @@ exports.selectArticleById = (article_id) => {
     .query("SELECT * FROM articles WHERE article_id = $1", [article_id])
     .then(({ rows }) => {
       if (rows.length === 0) {
-        return Promise.reject({ status: 404, msg: "Not Found" });
+        return Promise.reject({
+          status: 404,
+          error: "Not Found",
+          msg: "Article does not exist",
+        });
       } else return rows[0];
     });
 };
 
-exports.selectArticles = (sort_by, order) => {
+exports.selectArticles = (sort_by = "created_at", order = "DESC", topic) => {
   let sql = `
     SELECT articles.article_id, 
            articles.title, 
@@ -27,29 +31,34 @@ exports.selectArticles = (sort_by, order) => {
     ) AS article_comment_counts 
     ON article_comment_counts.article_id = articles.article_id
   `;
+  const args = [];
+
+  if (topic) {
+    sql += "WHERE articles.topic = $1\n";
+    args.push(topic);
+  }
+
   const sortingGreenList = ["title", "topic", "author", "created_at", "votes"];
 
   if (sortingGreenList.includes(sort_by)) {
     sql += `ORDER BY articles.${sort_by} `;
   } else if (sort_by === "comment_count") {
     sql += `ORDER BY comment_count `;
-  } else sql += "ORDER BY articles.created_at ";
+  }
 
-  if (
-    order &&
-    (order.toUpperCase() === "ASC" || order.toUpperCase() === "DESC")
-  ) {
+  if (order.toUpperCase() === "ASC" || order.toUpperCase() === "DESC") {
     sql += order.toUpperCase();
   } else sql += "DESC";
 
-  return db.query(sql).then(({ rows }) => rows);
+  return db.query(sql, args).then(({ rows }) => rows);
 };
 
 exports.updateArticle = (article_id, body) => {
   let sql = "";
   const args = [];
   if (body.inc_votes) {
-    sql += `UPDATE articles SET votes = votes + ${body.inc_votes} WHERE article_id = $1 RETURNING *`;
+    sql += `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *`;
+    args.push(body.inc_votes);
     args.push(article_id);
   }
   return db.query(sql, args).then(({ rows }) => rows[0]);
