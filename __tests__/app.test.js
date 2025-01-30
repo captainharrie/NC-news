@@ -159,14 +159,6 @@ describe("GET: /api/articles", () => {
           });
         });
     });
-    test("The articles should by default be sorted by date, in descending order", () => {
-      return request(app)
-        .get("/api/articles")
-        .expect(200)
-        .then(({ body: { articles } }) => {
-          expect(articles).toBeSortedBy("created_at", { descending: true });
-        });
-    });
     test("There should not be a body property present on any of the article objects", () => {
       return request(app)
         .get("/api/articles")
@@ -176,6 +168,100 @@ describe("GET: /api/articles", () => {
             expect(article.hasOwnProperty("body")).toBe(false);
           });
         });
+    });
+    describe("Queries", () => {
+      test("The articles should by default be sorted by date, in descending order, when no query is provided", () => {
+        return request(app)
+          .get("/api/articles")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).toBeSortedBy("created_at", { descending: true });
+          });
+      });
+      test("should take a sort_by query and sort the data by the provided column name", async () => {
+        await request(app)
+          .get("/api/articles?sort_by=title")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles.length).toBe(13);
+            expect(articles).toBeSortedBy("title", { descending: true });
+          });
+
+        await request(app)
+          .get("/api/articles?sort_by=author")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles.length).toBe(13);
+            expect(articles).toBeSortedBy("author", { descending: true });
+          });
+
+        await request(app)
+          .get("/api/articles?sort_by=votes")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles.length).toBe(13);
+            expect(articles).toBeSortedBy("votes", { descending: true });
+          });
+
+        await request(app)
+          .get("/api/articles?sort_by=comment_count")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles.length).toBe(13);
+            expect(articles).toBeSortedBy("comment_count", {
+              descending: true,
+            });
+          });
+      });
+      test("should take an order query and sort the data in that order", async () => {
+        await request(app)
+          .get("/api/articles?order=asc")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles.length).toBe(13);
+            expect(articles).toBeSortedBy("created_at", { descending: false });
+          });
+
+        await request(app)
+          .get("/api/articles?order=desc")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles.length).toBe(13);
+            expect(articles).toBeSortedBy("created_at", { descending: true });
+          });
+
+        await request(app)
+          .get("/api/articles?sort_by=title&order=desc")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles.length).toBe(13);
+            expect(articles).toBeSortedBy("title", { descending: true });
+          });
+
+        await request(app)
+          .get("/api/articles?sort_by=title&order=asc")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles.length).toBe(13);
+            expect(articles).toBeSortedBy("title", { descending: false });
+          });
+      });
+      test("should ignore invalid queries", async () => {
+        await request(app)
+          .get("/api/articles?sort=asc")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles.length).toBe(13);
+            expect(articles).toBeSortedBy("created_at", { descending: true });
+          });
+        await request(app)
+          .get("/api/articles?order=ascending")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles.length).toBe(13);
+            expect(articles).toBeSortedBy("created_at", { descending: true });
+          });
+      });
     });
   });
 });
