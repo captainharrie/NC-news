@@ -3,7 +3,12 @@ const {
   createRef,
   formatComments,
 } = require("../db/seeds/utils");
+const data = require("../db/data/test-data/");
+const db = require("../db/connection");
+const seed = require("../db/seeds/seed");
+
 const { validateKeys } = require("../src/__utils__/validateKeys");
+const { checkTopicExists } = require("../src/__utils__/checkTopicExists");
 
 describe("convertTimestampToDate", () => {
   test("returns a new object", () => {
@@ -116,7 +121,8 @@ describe("validateKeys(recievedKeys, expectedKeys, matchAll)", () => {
         validateKeys(["key 1", "key 2", "key 3"], ["key 1", "key 2"])
       ).rejects.toEqual({
         status: 400,
-        msg: "Bad Request",
+        error: "Bad Request",
+        msg: "Invalid or missing keys",
       });
     });
     test("should return a rejected promise if provided too few keys", async () => {
@@ -124,7 +130,8 @@ describe("validateKeys(recievedKeys, expectedKeys, matchAll)", () => {
         validateKeys(["key 1", "key 2"], ["key 1", "key 2", "key 3"])
       ).rejects.toEqual({
         status: 400,
-        msg: "Bad Request",
+        error: "Bad Request",
+        msg: "Invalid or missing keys",
       });
     });
     test("should return a rejected promise if provided keys do not match", async () => {
@@ -132,7 +139,8 @@ describe("validateKeys(recievedKeys, expectedKeys, matchAll)", () => {
         validateKeys(["key 1", "key 2", "key 4"], ["key 1", "key 2", "key 3"])
       ).rejects.toEqual({
         status: 400,
-        msg: "Bad Request",
+        error: "Bad Request",
+        msg: "Invalid or missing keys",
       });
     });
   });
@@ -147,7 +155,8 @@ describe("validateKeys(recievedKeys, expectedKeys, matchAll)", () => {
         validateKeys(["key 1", "key 4"], ["key 1", "key 2", "key 3"], false)
       ).rejects.toEqual({
         status: 400,
-        msg: "Bad Request",
+        error: "Bad Request",
+        msg: "Invalid or missing keys",
       });
     });
 
@@ -156,8 +165,34 @@ describe("validateKeys(recievedKeys, expectedKeys, matchAll)", () => {
         validateKeys([], ["key 1", "key 2", "key 3"], false)
       ).rejects.toEqual({
         status: 400,
-        msg: "Bad Request",
+        error: "Bad Request",
+        msg: "Invalid or missing keys",
       });
     });
+  });
+});
+
+describe("checkTopic", () => {
+  beforeAll(() => {
+    return seed(data);
+  });
+
+  afterAll(() => {
+    return db.end();
+  });
+  test("should resolve if the topic exists in the topics table", () => {
+    async () => {
+      await expect(checkTopicExists("mitch")).resolves.toEqual(
+        'The topic "Mitch" exists'
+      );
+    };
+  });
+
+  test("should reject if the topic does not exist in the topics table", () => {
+    async () => {
+      await expect(checkTopicExists("cooking")).resolves.toEqual(
+        'The topic "cooking" does not exist'
+      );
+    };
   });
 });

@@ -14,6 +14,11 @@ exports.validateKeys = (receivedKeys, expectedKeys, matchAll = true) => {
       receivedKeysClone.every((key) => expectedKeys.includes(key))
     ) {
       return resolve("Keys are valid");
-    } else return reject({ status: 400, msg: "Bad Request" });
+    } else
+      return reject({
+        status: 400,
+        error: "Bad Request",
+        msg: "Invalid or missing keys",
+      });
   });
 };

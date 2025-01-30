@@ -13,11 +13,7 @@ exports.getComments = (request, response, next) => {
       return selectComments(article_id);
     })
     .then((comments) => {
-      if (comments.length === 0) {
-        response
-          .status(200)
-          .send({ comments: "There are no comments on this article." });
-      } else response.status(200).send({ comments });
+      response.status(200).send({ comments });
     })
     .catch((error) => next(error));
 };
