@@ -88,8 +88,9 @@ describe("GET: /api/articles/:article_id", () => {
       return request(app)
         .get("/api/articles/mitch")
         .expect(400)
-        .then(({ body: { error } }) => {
+        .then(({ body: { error, msg } }) => {
           expect(error).toBe("Bad Request");
+          expect(msg).toBe("Invalid ID");
         });
     });
   });
@@ -98,8 +99,9 @@ describe("GET: /api/articles/:article_id", () => {
       return request(app)
         .get("/api/articles/9001")
         .expect(404)
-        .then(({ body: { error } }) => {
+        .then(({ body: { error, msg } }) => {
           expect(error).toBe("Not Found");
+          expect(msg).toBe("Article does not exist");
         });
     });
   });
@@ -246,6 +248,23 @@ describe("GET: /api/articles", () => {
             expect(articles).toBeSortedBy("title", { descending: false });
           });
       });
+      test("should take a topic query and filter the results to articles with that topic", () => {
+        return request(app)
+          .get("/api/articles?topic=mitch")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles.length).toBe(12);
+            expect(articles).toBeSortedBy("created_at", { descending: true });
+          });
+      });
+      test("if topic exists, but does not have any articles, return an empty array", () => {
+        return request(app)
+          .get("/api/articles?topic=paper")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles).toEqual([]);
+          });
+      });
       test("should ignore invalid queries", async () => {
         await request(app)
           .get("/api/articles?sort=asc")
@@ -262,6 +281,17 @@ describe("GET: /api/articles", () => {
             expect(articles).toBeSortedBy("created_at", { descending: true });
           });
       });
+    });
+  });
+  describe("404: Not Found", () => {
+    test("if filtering by a topic that does not exist, should return a not found error", () => {
+      return request(app)
+        .get("/api/articles?topic=cooking")
+        .expect(404)
+        .then(({ body: { error, msg } }) => {
+          expect(error).toBe("Not Found");
+          expect(msg).toBe('The topic "cooking" does not exist');
+        });
     });
   });
 });
@@ -302,12 +332,12 @@ describe("GET: /api/articles/:article_id/comments", () => {
           expect(comments).toBeSortedBy("created_at", { descending: true });
         });
     });
-    test("If the article exists but there are no comments, should still return 200 but with an appropriate message.", () => {
+    test("If the article exists but there are no comments, should still return 200 with an empty array.", () => {
       return request(app)
         .get("/api/articles/2/comments")
         .expect(200)
         .then(({ body: { comments } }) => {
-          expect(comments).toBe("There are no comments on this article.");
+          expect(comments).toEqual([]);
         });
     });
   });
@@ -316,8 +346,9 @@ describe("GET: /api/articles/:article_id/comments", () => {
       return request(app)
         .get("/api/articles/myfavouritearticle/comments")
         .expect(400)
-        .then(({ body: { error } }) => {
+        .then(({ body: { error, msg } }) => {
           expect(error).toBe("Bad Request");
+          expect(msg).toBe("Invalid ID");
         });
     });
   });
@@ -326,8 +357,9 @@ describe("GET: /api/articles/:article_id/comments", () => {
       return request(app)
         .get("/api/articles/999/comments")
         .expect(404)
-        .then(({ body: { error } }) => {
+        .then(({ body: { error, msg } }) => {
           expect(error).toBe("Not Found");
+          expect(msg).toBe("Article does not exist");
         });
     });
   });
@@ -399,8 +431,9 @@ describe("POST: /api/articles/:article_id/comments", () => {
           author: "Harrie",
         })
         .expect(400)
-        .then(({ body: { error } }) => {
+        .then(({ body: { error, msg } }) => {
           expect(error).toBe("Bad Request");
+          expect(msg).toBe("Invalid or missing keys");
         });
     });
 
@@ -409,8 +442,9 @@ describe("POST: /api/articles/:article_id/comments", () => {
         .post("/api/articles/myfavouritearticle/comments")
         .send({ body: "This is a comment", author: "butter_bridge" })
         .expect(400)
-        .then(({ body: { error } }) => {
+        .then(({ body: { error, msg } }) => {
           expect(error).toBe("Bad Request");
+          expect(msg).toBe("Invalid ID");
         });
     });
   });
@@ -431,8 +465,9 @@ describe("POST: /api/articles/:article_id/comments", () => {
         .post("/api/articles/999/comments")
         .send({ body: "This is a comment", author: "butter_bridge" })
         .expect(404)
-        .then(({ body: { error } }) => {
+        .then(({ body: { error, msg } }) => {
           expect(error).toBe("Not Found");
+          expect(msg).toBe("Article does not exist");
         });
     });
   });
@@ -529,15 +564,17 @@ describe("PATCH /api/articles/:article_id", () => {
         .patch("/api/articles/1/")
         .send({ increment_votes: 1 })
         .expect(400)
-        .then(({ body: { error } }) => {
+        .then(({ body: { error, msg } }) => {
           expect(error).toBe("Bad Request");
+          expect(msg).toBe("Invalid or missing keys");
         });
       await request(app)
         .patch("/api/articles/1/")
         .send({ inc_votes: 1, NewTitle: "New title" })
         .expect(400)
-        .then(({ body: { error } }) => {
+        .then(({ body: { error, msg } }) => {
           expect(error).toBe("Bad Request");
+          expect(msg).toBe("Invalid or missing keys");
         });
     });
     test("If given an article with an ID that is not a number, it should respond with Bad Request", () => {
@@ -545,8 +582,9 @@ describe("PATCH /api/articles/:article_id", () => {
         .patch("/api/articles/myfavouritearticle/")
         .send({ inc_votes: 1 })
         .expect(400)
-        .then(({ body: { error } }) => {
+        .then(({ body: { error, msg } }) => {
           expect(error).toBe("Bad Request");
+          expect(msg).toBe("Invalid ID");
         });
     });
   });
@@ -556,8 +594,9 @@ describe("PATCH /api/articles/:article_id", () => {
         .patch("/api/articles/999/")
         .send({ inc_votes: 1 })
         .expect(404)
-        .then(({ body: { error } }) => {
+        .then(({ body: { error, msg } }) => {
           expect(error).toBe("Not Found");
+          expect(msg).toBe("Article does not exist");
         });
     });
   });
@@ -589,8 +628,9 @@ describe("DELETE: /api/comments/:comment_id", () => {
       return request(app)
         .delete("/api/comments/999")
         .expect(404)
-        .then(({ body: { error } }) => {
+        .then(({ body: { error, msg } }) => {
           expect(error).toBe("Not Found");
+          expect(msg).toBe("Can't delete a comment that does not exist");
         });
     });
   });
@@ -599,8 +639,9 @@ describe("DELETE: /api/comments/:comment_id", () => {
       return request(app)
         .delete("/api/comments/badcomment")
         .expect(400)
-        .then(({ body: { error } }) => {
+        .then(({ body: { error, msg } }) => {
           expect(error).toBe("Bad Request");
+          expect(msg).toBe("Invalid ID");
         });
     });
   });
