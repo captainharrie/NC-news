@@ -68,7 +68,7 @@ describe("GET: /api/articles/:article_id", () => {
         .get("/api/articles/1")
         .expect(200)
         .then(({ body: { article } }) => {
-          expect(Object.keys(article).length).toBe(8);
+          expect(Object.keys(article).length).toBe(9);
           // prettier-ignore
           expect(article).toMatchObject({
             author:           "butter_bridge",
@@ -77,6 +77,7 @@ describe("GET: /api/articles/:article_id", () => {
             body:             "I find this existence challenging",
             topic:            "mitch",
             created_at:       expect.toBeDateString(true),
+            comment_count:    11,
             votes:            100,
             article_img_url:  "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
           })
@@ -495,7 +496,7 @@ describe("PATCH /api/articles/:article_id", () => {
         .send({ inc_votes: 11 })
         .expect(200)
         .then(({ body: { article } }) => {
-          expect(Object.keys(article).length).toBe(8);
+          expect(Object.keys(article).length).toBe(9);
           // prettier-ignore
           expect(article).toMatchObject({
             author:           "butter_bridge",
@@ -504,6 +505,7 @@ describe("PATCH /api/articles/:article_id", () => {
             body:             "I find this existence challenging",
             topic:            "mitch",
             created_at:       expect.toBeDateString(true),
+            comment_count:    11,
             votes:            111,
             article_img_url:  "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
           })
@@ -516,7 +518,7 @@ describe("PATCH /api/articles/:article_id", () => {
         .send({ inc_votes: -1 })
         .expect(200)
         .then(({ body: { article } }) => {
-          expect(Object.keys(article).length).toBe(8);
+          expect(Object.keys(article).length).toBe(9);
           // prettier-ignore
           expect(article).toMatchObject({
             author:           "butter_bridge",
@@ -525,6 +527,7 @@ describe("PATCH /api/articles/:article_id", () => {
             body:             "I find this existence challenging",
             topic:            "mitch",
             created_at:       expect.toBeDateString(true),
+            comment_count:    11,
             votes:            99,
             article_img_url:  "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
           })

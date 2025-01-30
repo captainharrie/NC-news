@@ -1,7 +1,10 @@
 const db = require("../../db/connection");
 exports.selectArticleById = (article_id) => {
   return db
-    .query("SELECT * FROM articles WHERE article_id = $1", [article_id])
+    .query(
+      "SELECT *, (SELECT COUNT(*)::INT FROM comments WHERE article_id = $1) AS comment_count FROM articles WHERE article_id = $1",
+      [article_id]
+    )
     .then(({ rows }) => {
       if (rows.length === 0) {
         return Promise.reject({
@@ -57,7 +60,7 @@ exports.updateArticle = (article_id, body) => {
   let sql = "";
   const args = [];
   if (body.inc_votes) {
-    sql += `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *`;
+    sql += `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *, (SELECT COUNT(*)::INT FROM comments WHERE article_id = $2) AS comment_count`;
     args.push(body.inc_votes);
     args.push(article_id);
   }
