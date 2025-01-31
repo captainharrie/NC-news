@@ -181,72 +181,85 @@ describe("GET: /api/articles", () => {
             expect(articles).toBeSortedBy("created_at", { descending: true });
           });
       });
-      test("should take a sort_by query and sort the data by the provided column name", async () => {
-        await request(app)
+      test("should take a sort_by query and sort the data by the provided column name", () => {
+        return request(app)
           .get("/api/articles?sort_by=title")
           .expect(200)
           .then(({ body: { articles } }) => {
             expect(articles.length).toBe(13);
             expect(articles).toBeSortedBy("title", { descending: true });
-          });
+          })
+          .then(() => {
+            return request(app)
+              .get("/api/articles?sort_by=author")
+              .expect(200)
+              .then(({ body: { articles } }) => {
+                expect(articles.length).toBe(13);
 
-        await request(app)
-          .get("/api/articles?sort_by=author")
-          .expect(200)
-          .then(({ body: { articles } }) => {
-            expect(articles.length).toBe(13);
-            expect(articles).toBeSortedBy("author", { descending: true });
-          });
+                expect(articles).toBeSortedBy("author", { descending: true });
+              });
+          })
+          .then(() => {
+            return request(app)
+              .get("/api/articles?sort_by=votes")
+              .expect(200)
+              .then(({ body: { articles } }) => {
+                expect(articles.length).toBe(13);
 
-        await request(app)
-          .get("/api/articles?sort_by=votes")
-          .expect(200)
-          .then(({ body: { articles } }) => {
-            expect(articles.length).toBe(13);
-            expect(articles).toBeSortedBy("votes", { descending: true });
-          });
+                expect(articles).toBeSortedBy("votes", { descending: true });
+              });
+          })
+          .then(() => {
+            return request(app)
+              .get("/api/articles?sort_by=comment_count")
+              .expect(200)
+              .then(({ body: { articles } }) => {
+                expect(articles.length).toBe(13);
 
-        await request(app)
-          .get("/api/articles?sort_by=comment_count")
-          .expect(200)
-          .then(({ body: { articles } }) => {
-            expect(articles.length).toBe(13);
-            expect(articles).toBeSortedBy("comment_count", {
-              descending: true,
-            });
+                expect(articles).toBeSortedBy("comment_count", {
+                  descending: true,
+                });
+              });
           });
       });
-      test("should take an order query and sort the data in that order", async () => {
-        await request(app)
+      test("should take an order query and sort the data in that order", () => {
+        return request(app)
           .get("/api/articles?order=asc")
           .expect(200)
           .then(({ body: { articles } }) => {
             expect(articles.length).toBe(13);
             expect(articles).toBeSortedBy("created_at", { descending: false });
-          });
+          })
+          .then(() => {
+            return request(app)
+              .get("/api/articles?order=desc")
+              .expect(200)
+              .then(({ body: { articles } }) => {
+                expect(articles.length).toBe(13);
+                expect(articles).toBeSortedBy("created_at", {
+                  descending: true,
+                });
+              });
+          })
 
-        await request(app)
-          .get("/api/articles?order=desc")
-          .expect(200)
-          .then(({ body: { articles } }) => {
-            expect(articles.length).toBe(13);
-            expect(articles).toBeSortedBy("created_at", { descending: true });
-          });
+          .then(() => {
+            return request(app)
+              .get("/api/articles?sort_by=title&order=desc")
+              .expect(200)
+              .then(({ body: { articles } }) => {
+                expect(articles.length).toBe(13);
+                expect(articles).toBeSortedBy("title", { descending: true });
+              });
+          })
 
-        await request(app)
-          .get("/api/articles?sort_by=title&order=desc")
-          .expect(200)
-          .then(({ body: { articles } }) => {
-            expect(articles.length).toBe(13);
-            expect(articles).toBeSortedBy("title", { descending: true });
-          });
-
-        await request(app)
-          .get("/api/articles?sort_by=title&order=asc")
-          .expect(200)
-          .then(({ body: { articles } }) => {
-            expect(articles.length).toBe(13);
-            expect(articles).toBeSortedBy("title", { descending: false });
+          .then(() => {
+            return request(app)
+              .get("/api/articles?sort_by=title&order=asc")
+              .expect(200)
+              .then(({ body: { articles } }) => {
+                expect(articles.length).toBe(13);
+                expect(articles).toBeSortedBy("title", { descending: false });
+              });
           });
       });
       test("should take a topic query and filter the results to articles with that topic", () => {
@@ -266,20 +279,24 @@ describe("GET: /api/articles", () => {
             expect(articles).toEqual([]);
           });
       });
-      test("should ignore invalid queries", async () => {
-        await request(app)
+      test("should ignore invalid queries", () => {
+        return request(app)
           .get("/api/articles?sort=asc")
           .expect(200)
           .then(({ body: { articles } }) => {
             expect(articles.length).toBe(13);
             expect(articles).toBeSortedBy("created_at", { descending: true });
-          });
-        await request(app)
-          .get("/api/articles?order=ascending")
-          .expect(200)
-          .then(({ body: { articles } }) => {
-            expect(articles.length).toBe(13);
-            expect(articles).toBeSortedBy("created_at", { descending: true });
+          })
+          .then(() => {
+            return request(app)
+              .get("/api/articles?order=ascending")
+              .expect(200)
+              .then(({ body: { articles } }) => {
+                expect(articles.length).toBe(13);
+                expect(articles).toBeSortedBy("created_at", {
+                  descending: true,
+                });
+              });
           });
       });
     });
@@ -534,50 +551,63 @@ describe("PATCH /api/articles/:article_id", () => {
           return article;
         });
     });
-    test("GETTING the article after PATCHING should return the article with the newly updated information", async () => {
-      const articleBeforePatch = await request(app)
+    test("GETTING the article after PATCHING should return the article with the newly updated information", () => {
+      return request(app)
         .get("/api/articles/1/")
         .expect(200)
         .then(({ body: { article } }) => {
           return article;
-        });
+        })
+        .then((articleBeforePatch) => {
+          return Promise.all([
+            articleBeforePatch,
+            request(app)
+              .patch("/api/articles/1/")
+              .send({ inc_votes: 1 })
+              .expect(200)
+              .then(({ body: { article } }) => {
+                return article;
+              }),
+          ]);
+        })
 
-      const patchedArticle = await request(app)
-        .patch("/api/articles/1/")
-        .send({ inc_votes: 1 })
-        .expect(200)
-        .then(({ body: { article } }) => {
-          return article;
+        .then(([articleBeforePatch, patchedArticle]) => {
+          return Promise.all([
+            articleBeforePatch,
+            patchedArticle,
+            request(app)
+              .get("/api/articles/1/")
+              .expect(200)
+              .then(({ body: { article } }) => {
+                return article;
+              }),
+          ]);
+        })
+        .then(([articleBeforePatch, patchedArticle, articleAfterPatch]) => {
+          expect(articleBeforePatch).not.toEqual(articleAfterPatch);
+          expect(articleAfterPatch).toEqual(patchedArticle);
         });
-
-      const articleAfterPatch = await request(app)
-        .get("/api/articles/1/")
-        .expect(200)
-        .then(({ body: { article } }) => {
-          return article;
-        });
-
-      expect(articleBeforePatch).not.toEqual(articleAfterPatch);
-      expect(articleAfterPatch).toEqual(patchedArticle);
     });
   });
   describe("400: Bad Request", () => {
-    test("If given a body with invalid keys, it should respond with Bad Request", async () => {
-      await request(app)
+    test("If given a body with invalid keys, it should respond with Bad Request", () => {
+      return request(app)
         .patch("/api/articles/1/")
         .send({ increment_votes: 1 })
         .expect(400)
         .then(({ body: { error, msg } }) => {
           expect(error).toBe("Bad Request");
           expect(msg).toBe("Invalid or missing keys");
-        });
-      await request(app)
-        .patch("/api/articles/1/")
-        .send({ inc_votes: 1, NewTitle: "New title" })
-        .expect(400)
-        .then(({ body: { error, msg } }) => {
-          expect(error).toBe("Bad Request");
-          expect(msg).toBe("Invalid or missing keys");
+        })
+        .then(() => {
+          return request(app)
+            .patch("/api/articles/1/")
+            .send({ inc_votes: 1, NewTitle: "New title" })
+            .expect(400)
+            .then(({ body: { error, msg } }) => {
+              expect(error).toBe("Bad Request");
+              expect(msg).toBe("Invalid or missing keys");
+            });
         });
     });
     test("If given an article with an ID that is not a number, it should respond with Bad Request", () => {
@@ -622,8 +652,8 @@ describe("DELETE: /[Nonexistent Endpoint]", () => {
 
 describe("DELETE: /api/comments/:comment_id", () => {
   describe("204: No Content", () => {
-    test("should delete an existing comment from the comments table with the matching comment ID", async () => {
-      await request(app).delete("/api/comments/1").expect(204);
+    test("should delete an existing comment from the comments table with the matching comment ID", () => {
+      return request(app).delete("/api/comments/1").expect(204);
     });
   });
   describe("404: Not Found", () => {
