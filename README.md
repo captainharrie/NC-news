@@ -13,7 +13,13 @@ A demo version of the API is hosted at https://htpncnews.onrender.com/api.
 > The first request you make to the API may take up to a minute to resolve as the demo server spins up. The server will spin down if there haven't been any requests to the API in the last 15 minutes. After the server starts, there shouldn't be any more delays.
  
 ## About the Project
-NC News is a RESTful API for a news website backend, able to fetch topics, articles, and their relevant comments.
+NC News is a RESTful API for a news website backend, able to fetch topics, articles, and their relevant comments. Some features include:
+- The ability to get articles by ID, or fetch all articles and optionally filter and sort the results.
+- Vote on articles by ID
+- Fetch all comments for an article by ID
+- Fetch all topics
+- Fetch all users
+- Create & delete comments
 
 Written in Node.js utilising Express.js and Node-Postgres, it utilises TDD & MVC in the functional programming paradigm to create various endpoints for GET, POST, DELETE, and PATCH requests to perform CRUD operations on a database.
 
