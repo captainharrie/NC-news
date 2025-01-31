@@ -15,17 +15,22 @@ exports.getArticleById = (request, response, next) => {
     .catch((error) => next(error));
 };
 
-exports.getArticles = async (request, response, next) => {
-  try {
-    const { sort_by, order, topic } = request.query;
-    if (topic) {
-      await checkTopicExists(topic);
-    }
-    await selectArticles(sort_by, order, topic).then((articles) => {
-      response.status(200).send({ articles });
-    });
-  } catch (error) {
-    next(error);
+exports.getArticles = (request, response, next) => {
+  const { sort_by, order, topic } = request.query;
+  if (topic) {
+    return checkTopicExists(topic)
+      .then(() => {
+        return selectArticles(sort_by, order, topic).then((articles) => {
+          response.status(200).send({ articles });
+        });
+      })
+      .catch((error) => next(error));
+  } else {
+    return selectArticles(sort_by, order)
+      .then((articles) => {
+        response.status(200).send({ articles });
+      })
+      .catch((error) => next(error));
   }
 };
 
