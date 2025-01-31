@@ -111,13 +111,13 @@ describe("formatComments", () => {
 
 describe("validateKeys(recievedKeys, expectedKeys, matchAll)", () => {
   describe("matchAll === true :: if the third argument is not provided, matchAll defaults to true", () => {
-    test("should return a resolved promise if the provided keys match the expected keys", async () => {
-      await expect(
+    test("should return a resolved promise if the provided keys match the expected keys", () => {
+      return expect(
         validateKeys(["key 1", "key 2", "key 3"], ["key 1", "key 2", "key 3"])
       ).resolves.toEqual("Keys are valid");
     });
-    test("should return a rejected promise if provided too many keys", async () => {
-      await expect(
+    test("should return a rejected promise if provided too many keys", () => {
+      return expect(
         validateKeys(["key 1", "key 2", "key 3"], ["key 1", "key 2"])
       ).rejects.toEqual({
         status: 400,
@@ -125,8 +125,8 @@ describe("validateKeys(recievedKeys, expectedKeys, matchAll)", () => {
         msg: "Invalid or missing keys",
       });
     });
-    test("should return a rejected promise if provided too few keys", async () => {
-      await expect(
+    test("should return a rejected promise if provided too few keys", () => {
+      return expect(
         validateKeys(["key 1", "key 2"], ["key 1", "key 2", "key 3"])
       ).rejects.toEqual({
         status: 400,
@@ -134,8 +134,8 @@ describe("validateKeys(recievedKeys, expectedKeys, matchAll)", () => {
         msg: "Invalid or missing keys",
       });
     });
-    test("should return a rejected promise if provided keys do not match", async () => {
-      await expect(
+    test("should return a rejected promise if provided keys do not match", () => {
+      return expect(
         validateKeys(["key 1", "key 2", "key 4"], ["key 1", "key 2", "key 3"])
       ).rejects.toEqual({
         status: 400,
@@ -145,13 +145,13 @@ describe("validateKeys(recievedKeys, expectedKeys, matchAll)", () => {
     });
   });
   describe("matchAll === false", () => {
-    test("should return a resolved promise if all the provided keys are in the expected keys array", async () => {
-      await expect(
+    test("should return a resolved promise if all the provided keys are in the expected keys array", () => {
+      return expect(
         validateKeys(["key 1", "key 2"], ["key 1", "key 2", "key 3"], false)
       ).resolves.toEqual("Keys are valid");
     });
-    test("should return a rejected promise if any of the provided keys are not the expected keys array", async () => {
-      await expect(
+    test("should return a rejected promise if any of the provided keys are not the expected keys array", () => {
+      return expect(
         validateKeys(["key 1", "key 4"], ["key 1", "key 2", "key 3"], false)
       ).rejects.toEqual({
         status: 400,
@@ -160,8 +160,8 @@ describe("validateKeys(recievedKeys, expectedKeys, matchAll)", () => {
       });
     });
 
-    test("should return a rejected promise if no keys are provided", async () => {
-      await expect(
+    test("should return a rejected promise if no keys are provided", () => {
+      return expect(
         validateKeys([], ["key 1", "key 2", "key 3"], false)
       ).rejects.toEqual({
         status: 400,
@@ -181,18 +181,16 @@ describe("checkTopic", () => {
     return db.end();
   });
   test("should resolve if the topic exists in the topics table", () => {
-    async () => {
-      await expect(checkTopicExists("mitch")).resolves.toEqual(
-        'The topic "Mitch" exists'
-      );
-    };
+    return expect(checkTopicExists("mitch")).resolves.toEqual(
+      'The topic "mitch" exists'
+    );
   });
 
   test("should reject if the topic does not exist in the topics table", () => {
-    async () => {
-      await expect(checkTopicExists("cooking")).resolves.toEqual(
-        'The topic "cooking" does not exist'
-      );
-    };
+    return expect(checkTopicExists("cooking")).rejects.toEqual({
+      error: "Not Found",
+      msg: 'The topic "cooking" does not exist',
+      status: 404,
+    });
   });
 });
