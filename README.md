@@ -14,11 +14,12 @@ A demo version of the API is hosted at https://htpncnews.onrender.com/api.
  
 ## About the Project
 NC News is a RESTful API for a news website backend. Some features include:
-- The ability to get articles by ID, or fetch all articles and optionally filter and sort the results.
-- Vote on articles by ID
-- Fetch all comments for an article by ID
+- Fetch all articles and optionally filter and sort the results.
 - Fetch all topics
 - Fetch all users
+- Fetch all comments for an article by ID
+- Get an article by ID
+- Vote on an article by ID
 - Create & delete comments
 
 Written in Node.js utilising Express.js and Node-Postgres, it utilises TDD & MVC in the functional programming paradigm to create various endpoints for GET, POST, DELETE, and PATCH requests to perform CRUD operations on a database.
