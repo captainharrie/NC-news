@@ -10,7 +10,7 @@
 ## Live Demo
 A demo version of the API is hosted at https://htpncnews.onrender.com/api.
 > [!WARNING]
-> The first request you make to the API may take up to a minute to resolve as the demo server spins up. The server will spin down if there haven't been any requests to the API in the last 15 minutes. After the server starts, there shouldn't be any more delays.
+> The first request you make to the API may take a minute or so to resolve as the demo server spins up. The server will spin down if there haven't been any requests to the API in the last 15 minutes. After the server starts, there shouldn't be any more delays.
  
 ## About the Project
 NC News is a RESTful API for a news website backend. Some features include:
