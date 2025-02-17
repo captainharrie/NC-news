@@ -1,5 +1,6 @@
 const endpointsJson = require("./endpoints.json");
 const db = require("./db/connection");
+const cors = require("cors");
 
 const express = require("express");
 const { getTopics } = require("./src/__controllers__/topics");
@@ -16,6 +17,7 @@ const {
 const { getUsers } = require("./src/__controllers__/users");
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 
 // GET endpoints start
