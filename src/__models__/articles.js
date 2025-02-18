@@ -16,7 +16,13 @@ exports.selectArticleById = (article_id) => {
     });
 };
 
-exports.selectArticles = (sort_by = "created_at", order = "DESC", topic) => {
+exports.selectArticles = ({
+  sort_by = "created_at",
+  order = "DESC",
+  topic,
+  limit = 10,
+  offset = 0,
+}) => {
   let sql = `
     SELECT articles.article_id, 
            articles.title, 
@@ -53,6 +59,7 @@ exports.selectArticles = (sort_by = "created_at", order = "DESC", topic) => {
     sql += order.toUpperCase();
   } else sql += "DESC";
 
+  sql += `\nLIMIT ${limit} OFFSET ${offset}`;
   return db.query(sql, args).then(({ rows }) => rows);
 };
 

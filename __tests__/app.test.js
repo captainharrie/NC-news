@@ -115,7 +115,7 @@ describe("GET: /api/articles", () => {
         .get("/api/articles")
         .expect(200)
         .then(({ body: { articles } }) => {
-          expect(articles.length).toBe(13);
+          expect(articles.length).toBe(10);
         });
     });
     test("Each article object should contain the following properties: author, title, article_id, topic, created_at, votes, article_img_url, and comment_count", () => {
@@ -186,7 +186,7 @@ describe("GET: /api/articles", () => {
           .get("/api/articles?sort_by=title")
           .expect(200)
           .then(({ body: { articles } }) => {
-            expect(articles.length).toBe(13);
+            expect(articles.length).toBe(10);
             expect(articles).toBeSortedBy("title", { descending: true });
           })
           .then(() => {
@@ -194,7 +194,7 @@ describe("GET: /api/articles", () => {
               .get("/api/articles?sort_by=author")
               .expect(200)
               .then(({ body: { articles } }) => {
-                expect(articles.length).toBe(13);
+                expect(articles.length).toBe(10);
 
                 expect(articles).toBeSortedBy("author", { descending: true });
               });
@@ -204,7 +204,7 @@ describe("GET: /api/articles", () => {
               .get("/api/articles?sort_by=votes")
               .expect(200)
               .then(({ body: { articles } }) => {
-                expect(articles.length).toBe(13);
+                expect(articles.length).toBe(10);
 
                 expect(articles).toBeSortedBy("votes", { descending: true });
               });
@@ -214,7 +214,7 @@ describe("GET: /api/articles", () => {
               .get("/api/articles?sort_by=comment_count")
               .expect(200)
               .then(({ body: { articles } }) => {
-                expect(articles.length).toBe(13);
+                expect(articles.length).toBe(10);
 
                 expect(articles).toBeSortedBy("comment_count", {
                   descending: true,
@@ -227,7 +227,7 @@ describe("GET: /api/articles", () => {
           .get("/api/articles?order=asc")
           .expect(200)
           .then(({ body: { articles } }) => {
-            expect(articles.length).toBe(13);
+            expect(articles.length).toBe(10);
             expect(articles).toBeSortedBy("created_at", { descending: false });
           })
           .then(() => {
@@ -235,7 +235,7 @@ describe("GET: /api/articles", () => {
               .get("/api/articles?order=desc")
               .expect(200)
               .then(({ body: { articles } }) => {
-                expect(articles.length).toBe(13);
+                expect(articles.length).toBe(10);
                 expect(articles).toBeSortedBy("created_at", {
                   descending: true,
                 });
@@ -247,7 +247,7 @@ describe("GET: /api/articles", () => {
               .get("/api/articles?sort_by=title&order=desc")
               .expect(200)
               .then(({ body: { articles } }) => {
-                expect(articles.length).toBe(13);
+                expect(articles.length).toBe(10);
                 expect(articles).toBeSortedBy("title", { descending: true });
               });
           })
@@ -257,7 +257,7 @@ describe("GET: /api/articles", () => {
               .get("/api/articles?sort_by=title&order=asc")
               .expect(200)
               .then(({ body: { articles } }) => {
-                expect(articles.length).toBe(13);
+                expect(articles.length).toBe(10);
                 expect(articles).toBeSortedBy("title", { descending: false });
               });
           });
@@ -267,8 +267,52 @@ describe("GET: /api/articles", () => {
           .get("/api/articles?topic=mitch")
           .expect(200)
           .then(({ body: { articles } }) => {
-            expect(articles.length).toBe(12);
+            expect(articles.length).toBe(10);
             expect(articles).toBeSortedBy("created_at", { descending: true });
+          });
+      });
+      test("should take a limit query and return less than or equal to that amount of articles, defaulting to 10", () => {
+        return request(app)
+          .get("/api/articles")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles.length).toBe(10);
+          })
+          .then(() => {
+            return request(app)
+              .get("/api/articles?limit=5")
+              .expect(200)
+              .then(({ body: { articles } }) => {
+                expect(articles.length).toBe(5);
+              });
+          })
+          .then(() => {
+            return request(app)
+              .get("/api/articles?limit=20")
+              .expect(200)
+              .then(({ body: { articles } }) => {
+                expect(articles.length).toBe(13);
+              });
+          });
+      });
+      test("should take an offset query, returning the next set of articles following that offset", () => {
+        return request(app)
+          .get("/api/articles?limit=20")
+          .expect(200)
+          .then(({ body: { articles } }) => {
+            expect(articles.length).toBe(13);
+            return articles;
+          })
+          .then((allArticles) => {
+            return request(app)
+              .get("/api/articles?limit=10&offset=10")
+              .expect(200)
+              .then(({ body: { articles } }) => {
+                expect(articles.length).toBe(3);
+                expect(articles[0]).toEqual(allArticles[10]);
+                expect(articles[1]).toEqual(allArticles[11]);
+                expect(articles[2]).toEqual(allArticles[12]);
+              });
           });
       });
       test("if topic exists, but does not have any articles, return an empty array", () => {
@@ -284,7 +328,7 @@ describe("GET: /api/articles", () => {
           .get("/api/articles?sort=asc")
           .expect(200)
           .then(({ body: { articles } }) => {
-            expect(articles.length).toBe(13);
+            expect(articles.length).toBe(10);
             expect(articles).toBeSortedBy("created_at", { descending: true });
           })
           .then(() => {
@@ -292,7 +336,7 @@ describe("GET: /api/articles", () => {
               .get("/api/articles?order=ascending")
               .expect(200)
               .then(({ body: { articles } }) => {
-                expect(articles.length).toBe(13);
+                expect(articles.length).toBe(10);
                 expect(articles).toBeSortedBy("created_at", {
                   descending: true,
                 });
