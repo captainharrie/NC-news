@@ -467,6 +467,28 @@ describe("GET: /api/users/:username", () => {
     });
   });
 });
+
+describe("GET: /api/comment/:comment_id", () => {
+  describe("200: Success", () => {
+    test("Responds with a comment object, containing a comment_id matching the request, an article_id, an author, a body, a number of votes, and a created_at date", () => {
+      return request(app)
+        .get("/api/comment/1")
+        .expect(200)
+        .then(({ body: { comment } }) => {
+          expect(Object.keys(comment).length).toBe(6);
+          // prettier-ignore
+          expect(comment).toMatchObject({
+            comment_id:	  1,
+            article_id:	  expect.toBeNumber(true),
+            author:	      expect.toBeString(true),
+            body:       	expect.toBeString(true),
+            votes:	      expect.toBeNumber(true),
+            created_at:	  expect.toBeDateString(true)
+          });
+        });
+    });
+  });
+});
 // GET endpoint tests end
 
 // POST endpoint tests begin
@@ -697,6 +719,129 @@ describe("PATCH /api/articles/:article_id", () => {
     });
   });
 });
+
+describe("PATCH /api/comments/:comment_id", () => {
+  describe("200: Success", () => {
+    test("Given a body with the key inc_votes with a POSITIVE value, it should INCREMENT the comment's vote count and return the comment with the expected vote count", () => {
+      return request(app)
+        .patch("/api/comment/1/")
+        .send({ inc_votes: 11 })
+        .expect(200)
+        .then(({ body: { comment } }) => {
+          expect(Object.keys(comment).length).toBe(6);
+          // prettier-ignore
+          expect(comment).toMatchObject({
+            comment_id:	  expect.toBeNumber(true),
+            article_id:	  expect.toBeNumber(true),
+            author:	      expect.toBeString(true),
+            body:       	expect.toBeString(true),
+            votes:	      27,
+            created_at:	  expect.toBeDateString(true)
+          });
+        });
+    });
+    test("Given a body with the key inc_votes with a NEGATIVE value, it should DECREMENT the comment's vote count and return the comment with the expected vote count", () => {
+      return request(app)
+        .patch("/api/comment/1/")
+        .send({ inc_votes: -1 })
+        .expect(200)
+        .then(({ body: { comment } }) => {
+          expect(Object.keys(comment).length).toBe(6);
+          // prettier-ignore
+          expect(comment).toMatchObject({
+            comment_id:	  expect.toBeNumber(true),
+            article_id:	  expect.toBeNumber(true),
+            author:	      expect.toBeString(true),
+            body:       	expect.toBeString(true),
+            votes:	      15,
+            created_at:	  expect.toBeDateString(true)
+          });
+        });
+    });
+    test("GETTING the comment after PATCHING should return the comment with the newly updated information", () => {
+      return request(app)
+        .get("/api/comment/1/")
+        .expect(200)
+        .then(({ body: { comment } }) => {
+          return comment;
+        })
+        .then((commentBeforePatch) => {
+          return Promise.all([
+            commentBeforePatch,
+            request(app)
+              .patch("/api/comment/1/")
+              .send({ inc_votes: 1 })
+              .expect(200)
+              .then(({ body: { comment } }) => {
+                return comment;
+              }),
+          ]);
+        })
+
+        .then(([commentBeforePatch, patchedComment]) => {
+          return Promise.all([
+            commentBeforePatch,
+            patchedComment,
+            request(app)
+              .get("/api/comment/1/")
+              .expect(200)
+              .then(({ body: { comment } }) => {
+                return comment;
+              }),
+          ]);
+        })
+        .then(([commentBeforePatch, patchedComment, commentAfterPatch]) => {
+          expect(commentBeforePatch).not.toEqual(commentAfterPatch);
+          expect(commentAfterPatch).toEqual(patchedComment);
+        });
+    });
+  });
+  describe("400: Bad Request", () => {
+    test("If given a body with invalid keys, it should respond with Bad Request", () => {
+      return request(app)
+        .patch("/api/articles/1/")
+        .send({ increment_votes: 1 })
+        .expect(400)
+        .then(({ body: { error, msg } }) => {
+          expect(error).toBe("Bad Request");
+          expect(msg).toBe("Invalid or missing keys");
+        })
+        .then(() => {
+          return request(app)
+            .patch("/api/articles/1/")
+            .send({ inc_votes: 1, NewTitle: "New title" })
+            .expect(400)
+            .then(({ body: { error, msg } }) => {
+              expect(error).toBe("Bad Request");
+              expect(msg).toBe("Invalid or missing keys");
+            });
+        });
+    });
+    test("If given an article with an ID that is not a number, it should respond with Bad Request", () => {
+      return request(app)
+        .patch("/api/articles/myfavouritearticle/")
+        .send({ inc_votes: 1 })
+        .expect(400)
+        .then(({ body: { error, msg } }) => {
+          expect(error).toBe("Bad Request");
+          expect(msg).toBe("Invalid ID");
+        });
+    });
+  });
+  describe("404: Not Found", () => {
+    test("If given a valid ID for an article that does not exist, it should respond with Not Found", () => {
+      return request(app)
+        .patch("/api/articles/999/")
+        .send({ inc_votes: 1 })
+        .expect(404)
+        .then(({ body: { error, msg } }) => {
+          expect(error).toBe("Not Found");
+          expect(msg).toBe("Article does not exist");
+        });
+    });
+  });
+});
+
 // PATCH endpoint tests end
 
 // DELETE endpoint tests start
