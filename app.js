@@ -13,6 +13,8 @@ const {
   getComments,
   postComment,
   deleteComment,
+  patchComment,
+  getCommentById,
 } = require("./src/__controllers__/comments");
 const { getUsers, getUserByID } = require("./src/__controllers__/users");
 const app = express();
@@ -28,6 +30,7 @@ app.get("/api", (request, response, next) => {
 app.get("/api/topics", getTopics);
 
 app.get("/api/articles/:article_id/comments", getComments);
+app.get("/api/comment/:comment_id", getCommentById);
 app.get("/api/articles/:article_id", getArticleById);
 app.get("/api/articles", getArticles);
 app.get("/api/users", getUsers);
@@ -40,6 +43,7 @@ app.post("/api/articles/:article_id/comments", postComment);
 
 // PATCH endpoints start
 app.patch("/api/articles/:article_id", patchArticle);
+app.patch("/api/comment/:comment_id", patchComment);
 // PATCH endpoints end
 
 // DELETE endpoints start

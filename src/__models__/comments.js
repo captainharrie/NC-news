@@ -8,6 +8,12 @@ exports.selectComments = (article_id) => {
     .then(({ rows }) => rows);
 };
 
+exports.selectCommentById = (comment_id) => {
+  return db
+    .query("SELECT * FROM comments WHERE comment_id = $1", [comment_id])
+    .then(({ rows }) => rows[0]);
+};
+
 exports.insertComment = (body, article_id, author) => {
   return db
     .query(
@@ -31,4 +37,15 @@ exports.dropComment = (comment_id) => {
         });
       }
     });
+};
+
+exports.updateComment = (comment_id, body) => {
+  let sql = "";
+  const args = [];
+  if (body.inc_votes) {
+    sql += `UPDATE comments SET votes = votes + $1 WHERE comment_id = $2 RETURNING *`;
+    args.push(body.inc_votes);
+    args.push(comment_id);
+  }
+  return db.query(sql, args).then(({ rows }) => rows[0]);
 };

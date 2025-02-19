@@ -3,6 +3,8 @@ const {
   selectComments,
   insertComment,
   dropComment,
+  selectCommentById,
+  updateComment,
 } = require("../__models__/comments");
 const { validateKeys } = require("../__utils__/validateKeys");
 
@@ -16,6 +18,13 @@ exports.getComments = (request, response, next) => {
       response.status(200).send({ comments });
     })
     .catch((error) => next(error));
+};
+
+exports.getCommentById = (request, response, next) => {
+  const { comment_id } = request.params;
+  selectCommentById(comment_id).then((comment) => {
+    response.status(200).send({ comment });
+  });
 };
 
 exports.postComment = (request, response, next) => {
@@ -35,5 +44,19 @@ exports.deleteComment = (request, response, next) => {
   const { comment_id } = request.params;
   dropComment(comment_id)
     .then(() => response.status(204).send())
+    .catch((error) => next(error));
+};
+
+exports.patchComment = (request, response, next) => {
+  const { comment_id } = request.params;
+  const body = request.body;
+  const receivedKeys = Object.keys(request.body);
+  const allowedKeys = ["inc_votes"];
+  return selectCommentById(comment_id)
+    .then(() => validateKeys(receivedKeys, allowedKeys, false))
+    .then(() => updateComment(comment_id, body))
+    .then((updatedComment) =>
+      response.status(200).send({ comment: updatedComment })
+    )
     .catch((error) => next(error));
 };
