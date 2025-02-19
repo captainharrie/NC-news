@@ -448,6 +448,25 @@ describe("GET: /api/users", () => {
     });
   });
 });
+
+describe("GET: /api/users/:username", () => {
+  describe("200: Success", () => {
+    test("Responds with a user object, containing a username, a name, and an avatar_url property", () => {
+      return request(app)
+        .get("/api/users/icellusedkars")
+        .expect(200)
+        .then(({ body: { user } }) => {
+          expect(Object.keys(user).length).toBe(3);
+          // prettier-ignore
+          expect(user).toMatchObject({
+            username:     "icellusedkars",
+            name:         "sam",
+            avatar_url:   "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4",
+          });
+        });
+    });
+  });
+});
 // GET endpoint tests end
 
 // POST endpoint tests begin
