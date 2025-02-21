@@ -7,6 +7,9 @@
 <a href="https://www.postgresql.org/"> <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="postgres"></a>
 </p>
 
+> [!NOTE]
+> This is a full stack project. The frontend repository for this project can be found here: https://github.com/captainharrie/nc-news-frontend.
+
 ## Live Demo
 A demo version of the API is hosted at https://htpncnews.onrender.com/api.
 > [!WARNING]
